@@ -14,6 +14,8 @@ import fire.half_blood_prince.myapplication.login.RegisterFragment;
 
 public class LoginVPAdapter extends FragmentStatePagerAdapter {
 
+    public static int SIZE = 2;
+
     public LoginVPAdapter(FragmentManager fm) {
         super(fm);
     }
@@ -30,8 +32,9 @@ public class LoginVPAdapter extends FragmentStatePagerAdapter {
         }
     }
 
+
     @Override
     public int getCount() {
-        return 2;
+        return SIZE;
     }
 }
