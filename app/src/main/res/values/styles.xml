@@ -8,8 +8,21 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
-    <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar"/>
+    <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
 
-    <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light"/>
+    <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+
+    <style name="ButtonStyle" parent="android:Widget.TextView">
+        <item name="android:textAppearance">@style/TextAppearance.AppCompat.Display4</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:color">@android:color/black</item>
+    </style>
+
+    <style name="TinyTextView"  parent="android:Widget.TextView">
+        <item name="android:textAppearance">@style/TextAppearance.AppCompat.Display4</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:color">@color/primayText</item>
+    </style>
+
 
 </resources>
