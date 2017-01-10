@@ -39,16 +39,6 @@ public class Login extends AppCompatActivity implements View.OnClickListener {
 
     }
 
-    private ViewPager.SimpleOnPageChangeListener getmPageChangeListener() {
-        return new ViewPager.SimpleOnPageChangeListener() {
-            @Override
-            public void onPageSelected(int position) {
-                super.onPageSelected(position);
-                updateBottomPanel(position);
-            }
-        };
-    }
-
     @Override
     protected void onStart() {
         super.onStart();
@@ -59,6 +49,21 @@ public class Login extends AppCompatActivity implements View.OnClickListener {
     protected void onStop() {
         super.onStop();
         mViewPager.removeOnPageChangeListener(mPageChangeListener);
+    }
+
+    /**
+     * This method is used to change the textview according to the page selection
+     *
+     * @return a instance of the ViewPager.SimpleOnPageChangeListener
+     */
+    private ViewPager.SimpleOnPageChangeListener getmPageChangeListener() {
+        return new ViewPager.SimpleOnPageChangeListener() {
+            @Override
+            public void onPageSelected(int position) {
+                super.onPageSelected(position);
+                updateBottomPanel(position);
+            }
+        };
     }
 
     /**
@@ -83,6 +88,9 @@ public class Login extends AppCompatActivity implements View.OnClickListener {
         tvActionBtn.setText(ACTION_BTN_TEXT[currentPos]);
     }
 
+    /**
+     * @param v view that is clicked
+     */
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
@@ -95,6 +103,9 @@ public class Login extends AppCompatActivity implements View.OnClickListener {
         }
     }
 
+    /**
+     * Show the next page in circular motion
+     */
     private void showNextPage() {
         mViewPager.setCurrentItem((mViewPager.getCurrentItem() + 1) % LoginVPAdapter.SIZE);
     }
