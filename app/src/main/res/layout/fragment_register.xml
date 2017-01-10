@@ -2,6 +2,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:gravity="center"
     android:orientation="vertical"
     android:padding="8dp"
@@ -9,43 +10,53 @@
 
 
     <android.support.design.widget.TextInputLayout
+        android:id="@+id/fm_reg_til_name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="4dp"
         android:hint="@string/name">
 
         <android.support.design.widget.TextInputEditText
-            style="@style/NormalTextView"
+            android:id="@+id/fm_reg_tip_name"
+            android:inputType="text"
+            style="@style/LoginFields"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
     </android.support.design.widget.TextInputLayout>
 
     <android.support.design.widget.TextInputLayout
+        android:id="@+id/fm_reg_til_email"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="4dp"
         android:hint="@string/email">
 
         <android.support.design.widget.TextInputEditText
-            android:id="@+id/textInputEditText"
-            style="@style/NormalTextView"
+            android:id="@+id/fm_reg_tip_email"
+            android:inputType="textEmailAddress"
+            style="@style/LoginFields"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
     </android.support.design.widget.TextInputLayout>
 
     <android.support.design.widget.TextInputLayout
+        android:id="@+id/fm_reg_til_password"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="4dp"
+        app:passwordToggleEnabled="false"
         android:hint="@string/password">
 
         <android.support.design.widget.TextInputEditText
-            style="@style/NormalTextView"
+            android:inputType="textPassword"
+            android:id="@+id/fm_reg_tip_password"
+            style="@style/LoginFields"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
     </android.support.design.widget.TextInputLayout>
 
     <Button
+        android:id="@+id/fm_reg_btn_register"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="4dp"

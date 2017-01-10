@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "448462420026",
+    "firebase_url": "https://expensetracker-907c2.firebaseio.com",
+    "project_id": "expensetracker-907c2",
+    "storage_bucket": "expensetracker-907c2.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:448462420026:android:5843703b5fa76d2e",
+        "android_client_info": {
+          "package_name": "fire.half_blood_prince.myapplication"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "448462420026-gda2e65j8frdcdod8jkojmji1khktfh3.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "fire.half_blood_prince.myapplication",
+            "certificate_hash": "A017A4A547769637A657925E4CECC4189BBDFDD9"
+          }
+        },
+        {
+          "client_id": "448462420026-07ifejpr66m1smui7qv60s6hdiaslht2.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA6StBQNbRU0zh2cUBTZYZMVZVEUwteo4I"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "448462420026-07ifejpr66m1smui7qv60s6hdiaslht2.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
