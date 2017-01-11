@@ -1,9 +1,9 @@
 package fire.half_blood_prince.myapplication;
 
+import android.content.ContentValues;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -12,9 +12,27 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ExpandableListView;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+
+import fire.half_blood_prince.myapplication.adapters.TransactionExpListAdapter;
+import fire.half_blood_prince.myapplication.database.CategorySchema;
+import fire.half_blood_prince.myapplication.database.DatabaseManager;
+import fire.half_blood_prince.myapplication.database.TransactionSchema;
+import fire.half_blood_prince.myapplication.model.Category;
+import fire.half_blood_prince.myapplication.model.Transaction;
+import fire.half_blood_prince.myapplication.utility.SharedFunctions;
 
 public class HomeActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
+
+
+    ExpandableListView mTransactionList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -23,14 +41,6 @@ public class HomeActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -40,7 +50,228 @@ public class HomeActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
+        //start
+
+        findingViews();
+
+//        temp();
+//        temp1();
+        temp2();
+
+
     }
+
+    private void temp2() {
+        DatabaseManager dbm = new DatabaseManager(this);
+        SQLiteDatabase db = dbm.getReadableDatabase();
+
+        String s = "SELECT * FROM " + TransactionSchema.TABLE_TRANSACTION + " AS T " + " INNER JOIN " + CategorySchema.TABLE_CATEGORY + " AS C"
+                + " ON " + "C." + CategorySchema.C_ID + " = " + "T." + TransactionSchema.CID
+               /* + " WHERE " + "C." + CategorySchema.CAT_TYPE + " LIKE " + "'" + CategorySchema.CATEGORY_TYPES.EXPENSE + "'"*/;
+
+        Cursor cursor = db.rawQuery(s, null);
+
+        HashMap<Integer, ArrayList<Transaction>> map = new HashMap<>();
+        HashMap<Integer, Category> catMap = new HashMap<>();
+
+
+        if (cursor != null && cursor.moveToFirst()) {
+            do {
+
+                Transaction transModel = new Transaction(cursor);
+                printLog(transModel.toString());
+
+//                String catName = cursor.getString(cursor.getColumnIndex(CategorySchema.CAT_NAME));
+                int id = transModel.getCid();
+
+                if (map.containsKey(id)) {
+                    ArrayList<Transaction> transList = map.get(id);
+                    transList.add(transModel);
+                    map.remove(id);
+                    map.put(id, transList); // map.replace requires java 1.8
+
+                    Category category = catMap.get(id);
+                    if (null != category) {
+
+                        category.setTotalAmount(String.valueOf(SharedFunctions.parseInt(category.getTotalAmount()) +
+                                SharedFunctions.parseInt(transModel.getAmount())));
+                        catMap.remove(id);
+                        catMap.put(id, category);
+                    }
+
+                } else {
+                    ArrayList<Transaction> transList = new ArrayList<>();
+                    transList.add(transModel);
+                    map.put(id, transList);
+
+                    Category category = new Category();
+                    category.setId(id);
+                    category.setCatName(cursor.getString(cursor.getColumnIndex(CategorySchema.CAT_NAME)));
+                    category.setCatType(cursor.getString(cursor.getColumnIndex(CategorySchema.CAT_TYPE)));
+                    category.setTotalAmount(transModel.getAmount());
+                    catMap.put(id, category);
+                }
+
+
+            } while (cursor.moveToNext());
+
+            cursor.close();
+        } else {
+            printLog("null/empty cursor");
+        }
+
+        db.close();
+
+        printLog("MAP " + map);
+//        printLog("Cat Map" + catMap);
+
+        ArrayList<Category> categoryArrayList = new ArrayList<>(catMap.values());
+        Collections.sort(categoryArrayList, new Comparator<Category>() {
+            @Override
+            public int compare(Category o1, Category o2) {
+                CategorySchema.CATEGORY_TYPES category_types = CategorySchema.CATEGORY_TYPES.valueOf(o1.getCatType());
+                return category_types.compareTo(CategorySchema.CATEGORY_TYPES.valueOf(o2.getCatType()));
+            }
+        });
+
+        printLog("CAT MAP VALUE LIST " + categoryArrayList.toString());
+
+        TransactionExpListAdapter mAdapter = new TransactionExpListAdapter(this, categoryArrayList, map);
+        mTransactionList.setAdapter(mAdapter);
+
+    }
+
+    private void temp1() {
+        DatabaseManager dbm = new DatabaseManager(this);
+        SQLiteDatabase db = dbm.getReadableDatabase();
+
+        String s = "SELECT * FROM " + TransactionSchema.TABLE_TRANSACTION + " AS T " + " INNER JOIN " + CategorySchema.TABLE_CATEGORY + " AS C"
+                + " ON " + "C." + CategorySchema.C_ID + " = " + "T." + TransactionSchema.CID
+                + " WHERE " + "C." + CategorySchema.CAT_TYPE + " LIKE " + "'" + CategorySchema.CATEGORY_TYPES.EXPENSE + "'";
+
+        Cursor cursor = db.rawQuery(s, null);
+
+        HashMap<Integer, ArrayList<Transaction>> map = new HashMap<>();
+        HashMap<Integer, Category> catMap = new HashMap<>();
+
+        if (cursor != null && cursor.moveToFirst()) {
+            do {
+
+                Transaction transModel = new Transaction(cursor);
+                printLog(transModel.toString());
+
+//                String catName = cursor.getString(cursor.getColumnIndex(CategorySchema.CAT_NAME));
+                int id = transModel.getCid();
+
+                if (map.containsKey(id)) {
+                    ArrayList<Transaction> transList = map.get(id);
+                    transList.add(transModel);
+                    map.remove(id);
+                    map.put(id, transList); // map.replace requires java 1.8
+
+                    Category category = catMap.get(id);
+                    if (null != category) {
+
+                        category.setTotalAmount(String.valueOf(SharedFunctions.parseInt(category.getTotalAmount()) +
+                                SharedFunctions.parseInt(transModel.getAmount())));
+                        catMap.remove(id);
+                        catMap.put(id, category);
+                    }
+
+                } else {
+                    ArrayList<Transaction> transList = new ArrayList<>();
+                    transList.add(transModel);
+                    map.put(id, transList);
+
+                    Category category = new Category();
+                    category.setId(id);
+                    category.setCatName(cursor.getString(cursor.getColumnIndex(CategorySchema.CAT_NAME)));
+                    category.setCatType(cursor.getString(cursor.getColumnIndex(CategorySchema.CAT_TYPE)));
+                    category.setTotalAmount(transModel.getAmount());
+                    catMap.put(id, category);
+                }
+
+
+            } while (cursor.moveToNext());
+
+            cursor.close();
+        } else {
+            printLog("null/empty cursor");
+        }
+
+        db.close();
+
+        printLog("MAP " + map);
+//        printLog("Cat Map" + catMap);
+
+        ArrayList<Category> categoryArrayList = new ArrayList<>(catMap.values());
+
+        printLog("CAT MAP VALUE LIST " + categoryArrayList.toString());
+
+        TransactionExpListAdapter mAdapter = new TransactionExpListAdapter(this, categoryArrayList, map);
+        mTransactionList.setAdapter(mAdapter);
+
+
+    }
+
+    private void temp() {
+        DatabaseManager dbm = new DatabaseManager(this);
+        SQLiteDatabase db = dbm.getReadableDatabase();
+
+//        ContentValues catValues = new ContentValues();
+//        catValues.put(CategorySchema.CAT_NAME, "Food");
+//        catValues.put(CategorySchema.CAT_TYPE, CategorySchema.CATEGORY_TYPES.EXPENSE.toString());
+//
+//        db.insert(CategorySchema.TABLE_CATEGORY, null, catValues);
+//
+//        catValues.put(CategorySchema.CAT_NAME, "Shopping");
+//        catValues.put(CategorySchema.CAT_TYPE, CategorySchema.CATEGORY_TYPES.EXPENSE.toString());
+//
+//        db.insert(CategorySchema.TABLE_CATEGORY, null, catValues);
+//
+//        catValues.put(CategorySchema.CAT_NAME, "Salary");
+//        catValues.put(CategorySchema.CAT_TYPE, CategorySchema.CATEGORY_TYPES.INCOME.toString());
+//
+//        db.insert(CategorySchema.TABLE_CATEGORY, null, catValues);
+
+        ContentValues transValues = new ContentValues();
+
+        transValues.put(TransactionSchema.TITLE, "Shopping Exp 1");
+        transValues.put(TransactionSchema.AMOUNT, "1000");
+        transValues.put(TransactionSchema.DATE, "2011-11-13");
+        transValues.put(TransactionSchema.NOTES, "Note 1");
+        transValues.put(TransactionSchema.CID, 2);
+
+        db.insert(TransactionSchema.TABLE_TRANSACTION, null, transValues);
+
+        transValues.put(TransactionSchema.TITLE, "Salary 2");
+        transValues.put(TransactionSchema.AMOUNT, "2000");
+        transValues.put(TransactionSchema.DATE, "2016-12-15");
+        transValues.put(TransactionSchema.NOTES, "Salary 2");
+        transValues.put(TransactionSchema.CID, 3);
+
+        db.insert(TransactionSchema.TABLE_TRANSACTION, null, transValues);
+
+        transValues.put(TransactionSchema.TITLE, "Salary 3");
+        transValues.put(TransactionSchema.AMOUNT, "100000");
+        transValues.put(TransactionSchema.DATE, "2012-01-11");
+        transValues.put(TransactionSchema.NOTES, "Salary 3");
+        transValues.put(TransactionSchema.CID, 3);
+
+        db.insert(TransactionSchema.TABLE_TRANSACTION, null, transValues);
+
+    }
+
+    private void printLog(String log) {
+        SharedFunctions.printLog(log);
+    }
+
+
+    private void findingViews() {
+        mTransactionList = (ExpandableListView) findViewById(R.id.ac_ha_elv_transaction);
+    }
+
 
     @Override
     public void onBackPressed() {
@@ -54,23 +285,12 @@ public class HomeActivity extends AppCompatActivity
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.home, menu);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
         return super.onOptionsItemSelected(item);
     }
 

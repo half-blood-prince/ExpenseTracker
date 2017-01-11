@@ -74,12 +74,12 @@ public class Validation {
 
     public static boolean isEmailValid(String emailID, TextInputLayout textInputLayout) {
 
-        if (!isEmpty(emailID, "Email ID is Required", textInputLayout)) {
+        if (!isEmpty(emailID, "Email T_ID is Required", textInputLayout)) {
             String ePattern = "^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@((\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\])|(([a-zA-Z\\-0-9]+\\.)+[a-zA-Z]{2,}))$";
             java.util.regex.Pattern p = java.util.regex.Pattern.compile(ePattern);
             java.util.regex.Matcher m = p.matcher(emailID);
             if (!m.matches()) {
-                textInputLayout.setError("Please enter a valid Email ID");
+                textInputLayout.setError("Please enter a valid Email T_ID");
                 return false;
             }
             textInputLayout.setErrorEnabled(false);

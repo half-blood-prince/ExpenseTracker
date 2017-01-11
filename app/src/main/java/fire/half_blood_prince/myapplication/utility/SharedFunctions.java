@@ -11,22 +11,23 @@ import android.widget.TextView;
 
 /**
  * Created by Half-Blood-Prince on 1/10/2017.
+ * Common functions used everywhere in the app
  */
 
 public class SharedFunctions {
 
 
-//    /**
-//     * @param number number in string type
-//     * @return int number upon successful parsing , 0 otherwise
-//     */
-//    public static int parseInt(String number) {
-//        try {
-//            return Integer.parseInt(number);
-//        } catch (Exception ignored) {
-//            return 0;
-//        }
-//    }
+    /**
+     * @param number number in string type
+     * @return int number upon successful parsing , 0 otherwise
+     */
+    public static int parseInt(String number) {
+        try {
+            return Integer.parseInt(number);
+        } catch (Exception ignored) {
+            return 0;
+        }
+    }
 
     /**
      * @param log log to print
