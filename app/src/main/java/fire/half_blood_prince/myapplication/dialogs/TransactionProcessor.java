@@ -144,7 +144,8 @@ public class TransactionProcessor extends AppCompatDialogFragment implements Vie
                 setSingleChoiceItem(getString(R.string.choose_category), categories.toArray(new String[]{}), tieCategory);
                 break;
             case R.id.la_df_tp_img_add_category:
-
+                Bundle bundle = new Bundle();
+                CategoryProcessor.show(getFragmentManager(), bundle);
                 break;
 
         }
@@ -179,8 +180,6 @@ public class TransactionProcessor extends AppCompatDialogFragment implements Vie
 
     private void addCategory() {
         String[] catTypes = Category.getCategoriesTypes();
-
-
 
 
     }
@@ -221,4 +220,10 @@ public class TransactionProcessor extends AppCompatDialogFragment implements Vie
         return SharedFunctions.getText(view);
     }
 
+
+    @Override
+    public void onDismiss(DialogInterface dialog) {
+        if (mDatabaseManager != null) mDatabaseManager.close();
+        super.onDismiss(dialog);
+    }
 }
