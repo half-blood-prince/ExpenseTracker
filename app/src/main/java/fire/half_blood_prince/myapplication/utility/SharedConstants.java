@@ -11,5 +11,13 @@ import java.util.Locale;
 public interface SharedConstants {
 
     SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd",Locale.getDefault());
+
+    int H_KEY_POPULATE_DS = 0xA0;
+    int H_KEY_UPDATE_DS = 0xA1;
+
+    String KEY_MODE = "mode";
+    String MODE_INSERT = "insert_mode";
+    String MODE_EDIT = "edit_mode";
+    String MODE_DELETE = "delete_mode";
 }
 

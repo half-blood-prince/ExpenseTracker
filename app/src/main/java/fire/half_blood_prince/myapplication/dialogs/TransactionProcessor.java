@@ -28,6 +28,7 @@ import fire.half_blood_prince.myapplication.database.CategorySchema;
 import fire.half_blood_prince.myapplication.database.DatabaseManager;
 import fire.half_blood_prince.myapplication.model.Category;
 import fire.half_blood_prince.myapplication.model.Transaction;
+import fire.half_blood_prince.myapplication.utility.SharedConstants;
 import fire.half_blood_prince.myapplication.utility.SharedFunctions;
 import fire.half_blood_prince.myapplication.utility.Validation;
 
@@ -35,7 +36,7 @@ import fire.half_blood_prince.myapplication.utility.Validation;
  * Created by Half-Blood-Prince on 1/12/2017.
  */
 
-public class TransactionProcessor extends AppCompatDialogFragment implements View.OnClickListener {
+public class TransactionProcessor extends AppCompatDialogFragment implements View.OnClickListener, SharedConstants {
 
     private static final String TAG = "TransactionProcessor";
     public static final String KEY_CAT_TYPE = "cat_type";
@@ -49,16 +50,21 @@ public class TransactionProcessor extends AppCompatDialogFragment implements Vie
     private TextInputEditText tieTitle, tieAmount, tieNotes, tieDate, tieCategory;
     private ImageView imgAddCategory;
 
-    private DatabaseManager mDatabaseManager;
+    private DatabaseManager mDBManager;
 
     private ArrayList<String> categories;
 
     private CategorySchema.CATEGORY_TYPES catType;
 
-    public static void show(FragmentManager fManager, Bundle args) {
+    private ProcessorPipeline mPipeline;
+
+    private String mode;
+
+    public static void show(FragmentManager fManager, Bundle args, ProcessorPipeline mPipeline) {
 
         TransactionProcessor thisObj = new TransactionProcessor();
         thisObj.setArguments(args);
+        thisObj.mPipeline = mPipeline;
         thisObj.show(fManager, TAG);
 
     }
@@ -73,15 +79,16 @@ public class TransactionProcessor extends AppCompatDialogFragment implements Vie
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
 
-        mDatabaseManager = new DatabaseManager(mActivity);
+        mDBManager = new DatabaseManager(mActivity);
 
         Bundle arguments = getArguments();
+        mode = arguments.getString(KEY_MODE, MODE_INSERT);
 
         catType = CategorySchema.CATEGORY_TYPES.valueOf(
                 arguments.getString(KEY_CAT_TYPE, CategorySchema.CATEGORY_TYPES.EXPENSE.toString()
                 ));
 
-        categories = Category.getCatNames(mDatabaseManager.getReadableDatabase(), catType, true);
+        categories = Category.getCatNames(mDBManager.getReadableDatabase(), catType, true);
 
         AppCompatDialog dialog = new AppCompatDialog(mActivity, R.style.AppTheme);
         View dialogView = LayoutInflater.from(mActivity).
@@ -91,6 +98,17 @@ public class TransactionProcessor extends AppCompatDialogFragment implements Vie
 
         findingViews(dialogView);
         settingListeners();
+
+
+
+        if (mode.equals(MODE_DELETE) || mode.equals(MODE_DELETE)) {
+            int pk = arguments.getInt(Transaction.CID);
+            Transaction transaction = Transaction.get(mDBManager.getReadableDatabase(), pk, true);
+            setFields(transaction);
+
+        }
+
+//        mActivity.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
 
         return dialog;
     }
@@ -127,28 +145,45 @@ public class TransactionProcessor extends AppCompatDialogFragment implements Vie
 
     @Override
     public void onClick(View v) {
+        SharedFunctions.hideKeypad(mActivity, v);
         switch (v.getId()) {
             case R.id.la_df_tp_img_close:
                 dismiss();
                 break;
             case R.id.la_df_tp_tv_action:
-                saveTransaction();
+                switch (mode){
+                    case MODE_INSERT:
+                        saveTransaction();
+                        break;
+                    case MODE_EDIT:
+                        break;
+                    case MODE_DELETE:
+                        break;
+                }
+
                 break;
 
             case R.id.la_df_tp_tie_date:
-                SharedFunctions.hideKeypad(mActivity, v);
                 setDate(tieDate);
                 break;
             case R.id.la_df_tp_tie_category:
-                SharedFunctions.hideKeypad(mActivity, v);
                 setSingleChoiceItem(getString(R.string.choose_category), categories.toArray(new String[]{}), tieCategory);
                 break;
             case R.id.la_df_tp_img_add_category:
-                Bundle bundle = new Bundle();
-                CategoryProcessor.show(getFragmentManager(), bundle);
+                addCategory();
                 break;
 
         }
+    }
+
+    private void setFields(Transaction transaction) {
+        tieTitle.setText(transaction.getTitle());
+        tieAmount.setText(transaction.getAmount());
+        tieNotes.setText(transaction.getNotes());
+        tieDate.setText(transaction.getDate());
+
+        Category category = Category.get(mDBManager.getReadableDatabase(), transaction.getCid(), true);
+        tieCategory.setText(category != null ? category.getCatName() : "");
     }
 
     private void setDate(final TextInputEditText editText) {
@@ -162,7 +197,6 @@ public class TransactionProcessor extends AppCompatDialogFragment implements Vie
             }
         });
     }
-
 
     private <T extends TextView> void setSingleChoiceItem(String title, final String[] mDataSet, final T view) {
         SharedFunctions.showSingleChoiceDialog(mActivity, title, mDataSet, view.getText().toString(), new DialogInterface.OnClickListener() {
@@ -179,19 +213,39 @@ public class TransactionProcessor extends AppCompatDialogFragment implements Vie
     }
 
     private void addCategory() {
-        String[] catTypes = Category.getCategoriesTypes();
-
-
+        Bundle bundle = new Bundle();
+        CategoryProcessor.show(getFragmentManager(), bundle, new ProcessorPipeline() {
+            @Override
+            public void onProcessComplete() {
+                categories = Category.getCatNames(mDBManager.getReadableDatabase(), catType, true);
+            }
+        });
     }
 
     private void saveTransaction() {
 
         Transaction transaction = validateAndConstruct();
         if (null != transaction) {
-            long insert = transaction.insert(mDatabaseManager.getReadableDatabase(), true);
-            if (insert != 1) showToast(getString(R.string.trans_inserted));
-            else showToast(getString(R.string.problem_inserting_trans));
+            long insert = transaction.save(mDBManager.getWritableDatabase(), true);
+            if (insert != 1) {
+                showToast(getString(R.string.trans_inserted));
+                mPipeline.onProcessComplete();
+            } else showToast(getString(R.string.problem_inserting_trans));
             dismiss();
+        }
+    }
+
+    private void updateTransaction(){
+//        Transaction transaction = validateAndConstruct();
+//        if (null != transaction) {
+//
+//        }
+    }
+
+    private boolean deleteTransaction(){
+        Transaction transaction = validateAndConstruct();
+        if (null != transaction) {
+
         }
     }
 
@@ -208,7 +262,7 @@ public class TransactionProcessor extends AppCompatDialogFragment implements Vie
             if (!Validation.isEmpty(getStirngFromView(tieAmount), getString(R.string.amount_req), tilAmount))
                 if (!Validation.isEmpty(getStirngFromView(tieDate), getString(R.string.date_req), tilDate))
                     if (!Validation.isEmpty(getStirngFromView(tieCategory), getString(R.string.cat_req), tilCategory)) {
-                        transaction.setCid(Category.getId(mDatabaseManager.getReadableDatabase(), getStirngFromView(tieCategory), true));
+                        transaction.setCid(Category.getId(mDBManager.getReadableDatabase(), getStirngFromView(tieCategory), true));
                         return transaction;
                     }
 
@@ -223,7 +277,7 @@ public class TransactionProcessor extends AppCompatDialogFragment implements Vie
 
     @Override
     public void onDismiss(DialogInterface dialog) {
-        if (mDatabaseManager != null) mDatabaseManager.close();
+        if (mDBManager != null) mDBManager.close();
         super.onDismiss(dialog);
     }
 }

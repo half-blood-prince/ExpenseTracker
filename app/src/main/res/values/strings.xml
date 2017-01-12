@@ -31,4 +31,7 @@
     <string name="cat_req">Category is Required</string>
     <string name="problem_inserting_trans">Problem while inserting transaction</string>
     <string name="trans_inserted">Transaction Inserted</string>
+    <string name="select_category_type">Select Category Type</string>
+    <string name="problem_ins_cat">Problem while inserting category</string>
+    <string name="cat_inserted">Category Inserted</string>
 </resources>

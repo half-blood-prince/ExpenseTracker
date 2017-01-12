@@ -1,7 +1,9 @@
 package fire.half_blood_prince.myapplication.model;
 
+import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.support.annotation.Nullable;
 
 import java.util.ArrayList;
 import java.util.Locale;
@@ -82,7 +84,61 @@ public class Category implements CategorySchema {
         return id;
     }
 
-    public static  String[] getCategoriesTypes() {
+    /**
+     * @param database database object
+     * @param canClose flag used to determine whether the databae object should be closed or not
+     * @return id
+     */
+    public long save(SQLiteDatabase database, boolean canClose) {
+        long primaryKey;
+
+        ContentValues values = getValues();
+        values.remove(C_ID);
+
+        primaryKey = database.insert(TABLE_CATEGORY, null, values);
+
+        if (canClose) database.close();
+
+        return primaryKey;
+    }
+
+    /**
+     *
+     * @param database database object
+     * @param catID id to get the category details
+     * @param canClose flag used to determine whether the databae object should be closed or not
+     * @return category object upon suucessful find , null otherwise
+     */
+    @Nullable
+    public static Category get(SQLiteDatabase database, int catID, boolean canClose) {
+
+        Category category = null;
+
+        String q = "SELECT * FROM " + TABLE_CATEGORY + " WHERE " + C_ID + " = " + catID;
+
+        Cursor cursor = database.rawQuery(q, null);
+        if (null != cursor && cursor.moveToFirst()) {
+            category = new Category(cursor);
+            cursor.close();
+        }
+
+        if (canClose) database.close();
+
+        return category;
+    }
+
+    private ContentValues getValues() {
+        ContentValues values = new ContentValues();
+        values.put(C_ID, id);
+        values.put(CAT_NAME, catName);
+        values.put(CAT_TYPE, catType);
+        return values;
+    }
+
+    /**
+     * @return Categories types ; Enum value converted to string array
+     */
+    public static String[] getCategoriesTypes() {
 
         String[] catTypes = new String[CategorySchema.CATEGORY_TYPES.values().length];
         int i = 0;

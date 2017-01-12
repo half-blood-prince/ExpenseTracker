@@ -23,7 +23,7 @@ public class TransactionExpListAdapter extends BaseExpandableListAdapter {
 
 
     private ArrayList<Category> catList; //header
-    private HashMap<Integer, ArrayList<Transaction>> transMap = new HashMap<>(); //child
+    private HashMap<Integer, ArrayList<Transaction>> transMap; //child
 
     private LayoutInflater mInflater;
 
@@ -37,6 +37,11 @@ public class TransactionExpListAdapter extends BaseExpandableListAdapter {
         mInflater = LayoutInflater.from(context);
 
         moneySymbol = context.getString(R.string.money_symbol);
+    }
+
+    public void setDataSet(ArrayList<Category> categoryArrayList, HashMap<Integer, ArrayList<Transaction>> transMap) {
+        this.catList = categoryArrayList;
+        this.transMap = transMap;
     }
 
     @Override
@@ -97,17 +102,17 @@ public class TransactionExpListAdapter extends BaseExpandableListAdapter {
     public View getChildView(int groupPosition, int childPosition, boolean isLastChild, View convertView, ViewGroup parent) {
 
         ChildHolder mHolder;
-        if (null == convertView){
+        if (null == convertView) {
             convertView = mInflater.inflate(R.layout.layout_trans_child, parent, false);
             mHolder = new ChildHolder(convertView);
             convertView.setTag(mHolder);
-        }else {
+        } else {
             mHolder = (ChildHolder) convertView.getTag();
         }
 
         Transaction transaction = (Transaction) getChild(groupPosition, childPosition);
         mHolder.tvTitle.setText(transaction.getTitle());
-        mHolder.tvAmount.setText(String.format(Locale.getDefault(),"%s %s",moneySymbol,transaction.getAmount()));
+        mHolder.tvAmount.setText(String.format(Locale.getDefault(), "%s %s", moneySymbol, transaction.getAmount()));
         mHolder.tvNotes.setText(transaction.getNotes());
         mHolder.tvDate.setText(transaction.getDate());
 

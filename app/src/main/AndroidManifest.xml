@@ -27,7 +27,8 @@
         <activity
             android:name=".HomeActivity"
             android:label="@string/title_activity_home"
-            android:theme="@style/AppTheme.HomeScreen"/>
+            android:theme="@style/AppTheme.HomeScreen"
+            />
     </application>
 
 </manifest>
