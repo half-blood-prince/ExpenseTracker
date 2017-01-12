@@ -1,6 +1,8 @@
 package fire.half_blood_prince.myapplication.model;
 
+import android.content.ContentValues;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 
 import java.util.Locale;
 
@@ -13,18 +15,19 @@ import fire.half_blood_prince.myapplication.database.TransactionSchema;
 
 public class Transaction implements TransactionSchema {
 
-    int id;
-    String title;
-    String amount;
-    String date;
-    String notes;
-    int cid;
+    private int id;
+    private String title;
+    private String amount;
+    private String date;
+    private String notes;
+    private int cid;
 
     public Transaction() {
     }
 
     /**
      * Cursor must be initialized and should have every column in it , otherwise error will be thrown
+     *
      * @param cursor cursor from database
      */
     public Transaction(Cursor cursor) {
@@ -34,6 +37,42 @@ public class Transaction implements TransactionSchema {
         date = cursor.getString(cursor.getColumnIndex(DATE));
         notes = cursor.getString(cursor.getColumnIndex(NOTES));
         cid = cursor.getInt(cursor.getColumnIndex(CID));
+    }
+
+
+    /**
+     * @param database database Object
+     * @param canClose flag used to determine wheather to close the database connection or not
+     * @return id
+     */
+    public long insert(SQLiteDatabase database, boolean canClose) {
+
+        long primaryKey;
+
+        ContentValues values = getValues();
+        values.remove(T_ID);
+
+        primaryKey = database.insert(TABLE_TRANSACTION, null, values);
+
+        if (canClose) database.close();
+
+        return primaryKey;
+    }
+
+    /**
+     * @return Transaction Object as ContentValues Object
+     */
+    private ContentValues getValues() {
+        ContentValues values = new ContentValues();
+
+        values.put(T_ID, id);
+        values.put(TITLE, title);
+        values.put(AMOUNT, amount);
+        values.put(DATE, date);
+        values.put(NOTES, notes);
+        values.put(CID, cid);
+
+        return values;
     }
 
 

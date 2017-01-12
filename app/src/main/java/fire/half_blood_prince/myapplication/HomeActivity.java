@@ -12,10 +12,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.ExpandableListView;
+import android.widget.TextView;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -24,15 +25,18 @@ import fire.half_blood_prince.myapplication.adapters.TransactionExpListAdapter;
 import fire.half_blood_prince.myapplication.database.CategorySchema;
 import fire.half_blood_prince.myapplication.database.DatabaseManager;
 import fire.half_blood_prince.myapplication.database.TransactionSchema;
+import fire.half_blood_prince.myapplication.dialogs.TransactionProcessor;
 import fire.half_blood_prince.myapplication.model.Category;
 import fire.half_blood_prince.myapplication.model.Transaction;
 import fire.half_blood_prince.myapplication.utility.SharedFunctions;
 
 public class HomeActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+        implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener {
 
 
-    ExpandableListView mTransactionList;
+    private ExpandableListView mTransactionList;
+
+    private TextView tvAddExpense, tvAddIncome;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,6 +44,8 @@ public class HomeActivity extends AppCompatActivity
         setContentView(R.layout.activity_home);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        setTitle(getString(R.string.app_name));
 
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -54,6 +60,7 @@ public class HomeActivity extends AppCompatActivity
         //start
 
         findingViews();
+        settingListeners();
 
 //        temp();
 //        temp1();
@@ -74,7 +81,6 @@ public class HomeActivity extends AppCompatActivity
 
         HashMap<Integer, ArrayList<Transaction>> map = new HashMap<>();
         HashMap<Integer, Category> catMap = new HashMap<>();
-
 
         if (cursor != null && cursor.moveToFirst()) {
             do {
@@ -270,6 +276,13 @@ public class HomeActivity extends AppCompatActivity
 
     private void findingViews() {
         mTransactionList = (ExpandableListView) findViewById(R.id.ac_ha_elv_transaction);
+        tvAddExpense = (TextView) findViewById(R.id.ac_home_tv_add_expense);
+        tvAddIncome = (TextView) findViewById(R.id.ac_home_tv_add_income);
+    }
+
+    private void settingListeners() {
+        tvAddExpense.setOnClickListener(this);
+        tvAddIncome.setOnClickListener(this);
     }
 
 
@@ -280,8 +293,10 @@ public class HomeActivity extends AppCompatActivity
             drawer.closeDrawer(GravityCompat.START);
         } else {
             super.onBackPressed();
+            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
         }
     }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -292,6 +307,23 @@ public class HomeActivity extends AppCompatActivity
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onClick(View v) {
+        Bundle bundle;
+        switch (v.getId()) {
+            case R.id.ac_home_tv_add_expense:
+                bundle = new Bundle();
+                bundle.putString(TransactionProcessor.KEY_CAT_TYPE, CategorySchema.CATEGORY_TYPES.EXPENSE.toString());
+                TransactionProcessor.show(getSupportFragmentManager(), bundle);
+                break;
+            case R.id.ac_home_tv_add_income:
+                bundle = new Bundle();
+                bundle.putString(TransactionProcessor.KEY_CAT_TYPE, CategorySchema.CATEGORY_TYPES.INCOME.toString());
+                TransactionProcessor.show(getSupportFragmentManager(), bundle);
+                break;
+        }
     }
 
     @SuppressWarnings("StatementWithEmptyBody")
@@ -318,4 +350,6 @@ public class HomeActivity extends AppCompatActivity
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
+
+
 }

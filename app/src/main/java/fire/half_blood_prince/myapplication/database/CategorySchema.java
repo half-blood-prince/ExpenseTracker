@@ -17,8 +17,12 @@ public interface CategorySchema {
 
     String CREATE_CATEGORY = "CREATE TABLE " + TABLE_CATEGORY + " ( "
             + C_ID + " INTEGER PRIMARY KEY AUTOINCREMENT , "
-            + CAT_NAME + " VARCHAR(120) ,"
+            + CAT_NAME + " VARCHAR(120) UNIQUE,"
             + CAT_TYPE + " VARCHAR(20) " +
             " ) ";
+
+    String QUERY_GET_ALL_INCONE_CATEGORY = "SELECT * FROM " + TABLE_CATEGORY + " WHERE " + CAT_TYPE + " = " + "'" + CATEGORY_TYPES.INCOME + "'";
+    String QUERY_GET_ALL_EXPENSE_CATEGORY = "SELECT * FROM " + TABLE_CATEGORY + " WHERE " + CAT_TYPE + " = " + "'" + CATEGORY_TYPES.EXPENSE + "'";
+
 
 }

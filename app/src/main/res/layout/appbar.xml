@@ -13,6 +13,7 @@
         android:layout_height="?actionBarSize"
         app:popupTheme="@style/AppTheme.PopupOverlay"
         android:background="?colorPrimary"
+        app:titleTextAppearance="@style/CustomToolbarTextView"
         >
 
     </android.support.v7.widget.Toolbar>

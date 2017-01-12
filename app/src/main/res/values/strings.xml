@@ -17,4 +17,18 @@
     <string name="navigation_drawer_close">Close navigation drawer</string>
 
     <string name="action_settings">Settings</string>
+    <string name="money_symbol">₹</string>
+    <string name="save">save</string>
+    <string name="title">Title</string>
+    <string name="amount">Amount</string>
+    <string name="notes_optional">Notes (optional)</string>
+    <string name="date">Date</string>
+    <string name="category">Category</string>
+    <string name="choose_category">Choose Category</string>
+    <string name="title_req">Title Required</string>
+    <string name="amount_req">Amount is Required</string>
+    <string name="date_req">Date is Required</string>
+    <string name="cat_req">Category is Required</string>
+    <string name="problem_inserting_trans">Problem while inserting transaction</string>
+    <string name="trans_inserted">Transaction Inserted</string>
 </resources>

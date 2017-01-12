@@ -6,6 +6,13 @@
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
+
+        <item name="android:windowAnimationStyle">@style/FadeAnimation</item>
+    </style>
+
+    <style name="FadeAnimation">
+        <item name="android:windowEnterAnimation">@android:anim/fade_in</item>
+        <item name="android:windowExitAnimation">@android:anim/fade_out</item>
     </style>
 
     <style name="AppTheme.HomeScreen">
@@ -33,10 +40,22 @@
         <item name="android:textSize">14sp</item>
     </style>
 
+    <style name="BigTextView" parent="android:Widget.TextView">
+        <item name="android:textAppearance">@style/TextAppearance.AppCompat.Display4</item>
+        <item name="android:textSize">18sp</item>
+    </style>
+
     <style name="LoginFields" parent="NormalTextView">
         <item name="android:maxLines">1</item>
         <item name="android:maxLength">80</item>
     </style>
+
+    <style name="CustomToolbarTextView" parent="@style/TextAppearance.AppCompat.Title">
+        <item name="android:textAppearance">?toolbarStyle</item>
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:textSize">18sp</item>
+    </style>
+
 
 
 </resources>

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingBottom="8dp"
+    android:paddingLeft="16dp"
+    android:paddingRight="16dp"
+    android:paddingTop="8dp">
+
+    <TextView
+        android:id="@+id/la_tc_tv_title"
+        style="@style/NormalTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:maxLines="1"
+        android:text="Title" />
+
+    <TextView
+        android:id="@+id/la_tc_tv_amount"
+        style="@style/NormalTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:gravity="end"
+        android:maxLines="1"
+        android:text="2000"
+
+        />
+
+    <TextView
+        android:id="@+id/la_tc_tv_notes"
+        style="@style/NormalTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/la_tc_tv_title"
+        android:layout_marginBottom="2dp"
+        android:layout_marginTop="2dp"
+        android:ellipsize="marquee"
+
+        android:maxLines="3"
+        android:text="Notes" />
+
+    <TextView
+        android:id="@+id/la_tc_tv_date"
+        style="@style/TinyTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/la_tc_tv_notes"
+        android:layout_marginBottom="2dp"
+        android:layout_marginTop="2dp"
+
+        android:maxLines="1"
+        android:text="2017-01-18" />
+
+</RelativeLayout>

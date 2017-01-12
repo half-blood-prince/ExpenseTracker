@@ -29,7 +29,7 @@ public class Validation {
     }
 
 
-    private static boolean isEmpty(String data, String errorMessage, TextInputLayout til) {
+    public static boolean isEmpty(String data, String errorMessage, TextInputLayout til) {
         if (data.isEmpty()) {
             if (null != til) til.setError(errorMessage);
             return true;

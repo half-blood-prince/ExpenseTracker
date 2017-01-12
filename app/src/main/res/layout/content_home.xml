@@ -8,11 +8,24 @@
     tools:context="fire.half_blood_prince.myapplication.HomeActivity"
     tools:showIn="@layout/app_bar_home">
 
+    <TextView
+        android:text="2017-01-12 to 2017-01-15"
+        style="@style/BigTextView"
+        android:gravity="center"
+        android:padding="4dp"
+        android:id="@+id/ac_ha_tv_stat"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        />
+
     <ExpandableListView
+        android:layout_below="@+id/ac_ha_tv_stat"
         android:id="@+id/ac_ha_elv_transaction"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@+id/ac_ha_cv">
+        android:layout_above="@+id/ac_ha_cv"
+        >
 
     </ExpandableListView>
 
@@ -20,9 +33,11 @@
         android:id="@+id/ac_ha_cv"
         android:layout_width="match_parent"
         android:layout_height="?actionBarSize"
-        android:layout_alignParentBottom="true"
         app:cardCornerRadius="0dp"
-        app:contentPadding="0dp">
+        app:contentPadding="0dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -31,14 +46,14 @@
             android:weightSum="10">
 
             <TextView
+                android:id="@+id/ac_home_tv_add_expense"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="2"
-                android:background="?selectableItemBackground"
-                android:clickable="true"
                 android:gravity="center"
+                style="@style/BigTextView"
+                android:textStyle="bold"
                 android:text="-" />
-
             <View
                 android:layout_width="1dp"
                 android:layout_height="match_parent"
@@ -49,7 +64,14 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="6"
                 android:gravity="center"
-                android:text="Balance : 52421" />
+                style="@style/NormalTextView"
+                android:text="Balance : 52421"
+                android:id="@+id/textView2" />
+
+            <View
+                android:layout_width="1dp"
+                android:layout_height="match_parent"
+                android:background="@color/dividerColor" />
 
             <View
                 android:layout_width="1dp"
@@ -57,12 +79,14 @@
                 android:background="@color/dividerColor" />
 
             <TextView
+                android:id="@+id/ac_home_tv_add_income"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="2"
-                android:background="?selectableItemBackground"
-                android:clickable="true"
+                android:textSize="24sp"
                 android:gravity="center"
+                style="@style/BigTextView"
+                android:textStyle="bold"
                 android:text="+" />
 
         </LinearLayout>
