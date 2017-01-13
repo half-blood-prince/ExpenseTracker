@@ -34,4 +34,17 @@
     <string name="select_category_type">Select Category Type</string>
     <string name="problem_ins_cat">Problem while inserting category</string>
     <string name="cat_inserted">Category Inserted</string>
+    <string name="update">Update</string>
+    <string name="problem_open_trans">Problem opening transaction</string>
+    <string name="prob_deleting_trans">Problem occurred while deleting transaction</string>
+    <string name="trans_deleted">Transaction deleted</string>
+    <string name="statistics">Statistics</string>
+    <string name="daily">Daily</string>
+    <string name="weekly">Weekly</string>
+    <string name="monthly">Monthly</string>
+    <string name="others">Others</string>
+    <string name="categories">Categories</string>
+    <string name="no_traans_details_available">Your Transaction details appear here \nNo Transaction details available yet \nPlease use + or - icon in the bottom bar to add \nincome and expense respectevly</string>
+    <string name="logout">Logout</string>
+
 </resources>

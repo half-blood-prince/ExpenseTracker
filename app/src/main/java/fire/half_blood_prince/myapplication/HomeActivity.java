@@ -1,91 +1,91 @@
 package fire.half_blood_prince.myapplication;
 
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
+import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ExpandableListView;
 import android.widget.TextView;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
 
-import fire.half_blood_prince.myapplication.adapters.TransactionExpListAdapter;
-import fire.half_blood_prince.myapplication.database.CategorySchema;
+import fire.half_blood_prince.myapplication.adapters.TransactionVPAdapter;
 import fire.half_blood_prince.myapplication.database.DatabaseManager;
 import fire.half_blood_prince.myapplication.dialogs.ProcessorPipeline;
-import fire.half_blood_prince.myapplication.dialogs.TransactionProcessor;
 import fire.half_blood_prince.myapplication.model.Category;
 import fire.half_blood_prince.myapplication.model.Transaction;
 import fire.half_blood_prince.myapplication.utility.SharedConstants;
 import fire.half_blood_prince.myapplication.utility.SharedFunctions;
 
 public class HomeActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener, ProcessorPipeline, SharedConstants {
+        implements SharedConstants, NavigationView.OnNavigationItemSelectedListener,
+        View.OnClickListener, ProcessorPipeline {
 
 
-    private ExpandableListView mTransactionList;
+    private Toolbar mToolBar;
 
-    private TextView tvAddExpense, tvAddIncome;
+    private DrawerLayout mDrawerLayout;
 
-    private DatabaseManager mDBManager = new DatabaseManager(this);
+    private ViewPager mPager;
+
+    private TextView tvNoTransDetails;
+
+    private TransactionVPAdapter mAdapter;
+
+    private ArrayList<String> mDataSet = new ArrayList<String>();
+
+//    private TextView tvAddExpense, tvAddIncome, tvBalance;
 
     private Handler mHandler;
 
-    private TransactionExpListAdapter mAdapter;
-    private HashMap<Integer, ArrayList<Transaction>> transactionMap = new HashMap<>();
-    private ArrayList<Category> categoriesList = new ArrayList<>();
+    private DatabaseManager mDBManager;
+
+    private String lastSelectedFrequency = TransactionBatchLoader.FREQUENCY_DAILY;
+
+    private static final String KEY_CAT_SEED_STATUS = "is_cat_seeded";
+
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
 
-        setTitle(getString(R.string.app_name));
-
+        mDBManager = new DatabaseManager(this);
         mHandler = getHandler();
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        drawer.setDrawerListener(toggle);
-        toggle.syncState();
 
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
-        navigationView.setNavigationItemSelectedListener(this);
+        findingViews();
 
-        //start
+        setSupportActionBar(mToolBar);
+        setTitle(getString(R.string.app_name));
+        setUpDrawerLayout();
 
         findingViews();
         settingListeners();
 
-        mAdapter = new TransactionExpListAdapter(HomeActivity.this, categoriesList, transactionMap);
-        mTransactionList.setAdapter(mAdapter);
+        mAdapter = new TransactionVPAdapter(getSupportFragmentManager(), mDataSet);
+        mPager.setAdapter(mAdapter);
 
+        new TransactionBatchLoader(lastSelectedFrequency).start();
 
-//        String s = "SELECT * FROM " + TransactionSchema.TABLE_TRANSACTION + " AS T " + " INNER JOIN " + CategorySchema.TABLE_CATEGORY + " AS C"
-//                + " ON " + "C." + CategorySchema.C_ID + " = " + "T." + TransactionSchema.CID
-//                + " WHERE " + "C." + CategorySchema.CAT_TYPE + " LIKE " + "'" + CategorySchema.CATEGORY_TYPES.EXPENSE + "'";
-
-        new TransactionLoader(Transaction.QUERY_ALL_TRANSACTION).start();
+        SharedPreferences preferences = getSharedPreferences(MAIN_PREF, MODE_PRIVATE);
+        if (!preferences.getBoolean(KEY_CAT_SEED_STATUS, false)) {
+            Category.seed(new DatabaseManager(this).getWritableDatabase(), true);
+            preferences.edit().putBoolean(KEY_CAT_SEED_STATUS, true).apply();
+        }
 
     }
+
 
     private Handler getHandler() {
         return new Handler(Looper.getMainLooper()) {
@@ -93,112 +93,66 @@ public class HomeActivity extends AppCompatActivity
             public void handleMessage(Message msg) {
                 switch (msg.what) {
                     case H_KEY_UPDATE_DS:
-                        mAdapter.setDataSet(categoriesList, transactionMap);
-                        mAdapter.notifyDataSetChanged();
+                        if (mDataSet.isEmpty()) {
+                            tvNoTransDetails.setVisibility(View.VISIBLE);
+                            mPager.setVisibility(View.GONE);
+                        } else {
+                            tvNoTransDetails.setVisibility(View.GONE);
+                            mPager.setVisibility(View.VISIBLE);
+                        }
+                        mAdapter.setDataSet(mDataSet);
                         break;
+                    default:
+                        super.handleMessage(msg);
                 }
-                super.handleMessage(msg);
+
             }
         };
     }
 
-    private class TransactionLoader extends Thread {
+    private void setUpDrawerLayout() {
 
-        String query;
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+                this, mDrawerLayout, mToolBar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        mDrawerLayout.addDrawerListener(toggle);
+        toggle.syncState();
 
-        TransactionLoader(String query) {
-            this.query = query;
-        }
-
-        @Override
-        public void run() {
-
-            SQLiteDatabase db = mDBManager.getReadableDatabase();
-            Cursor cursor = db.rawQuery(query, null);
-
-            HashMap<Integer, ArrayList<Transaction>> tMap = new HashMap<>();
-            HashMap<Integer, Category> cMap = new HashMap<>();
-            ArrayList<Category> cList;
-
-            if (cursor != null && cursor.moveToFirst()) {
-                do {
-
-                    Transaction transModel = new Transaction(cursor);
-
-                    int id = transModel.getCid();
-
-                    if (tMap.containsKey(id)) {
-                        ArrayList<Transaction> transList = tMap.get(id);
-                        transList.add(transModel);
-                        tMap.remove(id);
-                        tMap.put(id, transList); // tMap.replace requires java 1.8
-
-                        Category category = cMap.get(id);
-                        if (null != category) {
-
-                            category.setTotalAmount(String.valueOf(SharedFunctions.parseInt(category.getTotalAmount()) +
-                                    SharedFunctions.parseInt(transModel.getAmount())));
-                            cMap.remove(id);
-                            cMap.put(id, category);
-                        }
-
-                    } else {
-                        ArrayList<Transaction> transList = new ArrayList<>();
-                        transList.add(transModel);
-                        tMap.put(id, transList);
-
-                        Category category = new Category();
-                        category.setId(id);
-                        category.setCatName(cursor.getString(cursor.getColumnIndex(CategorySchema.CAT_NAME)));
-                        category.setCatType(cursor.getString(cursor.getColumnIndex(CategorySchema.CAT_TYPE)));
-                        category.setTotalAmount(transModel.getAmount());
-                        cMap.put(id, category);
-                    }
-
-
-                } while (cursor.moveToNext());
-
-                cursor.close();
-            }
-
-            db.close();
-
-            cList = new ArrayList<>(cMap.values());
-            Collections.sort(cList, new Comparator<Category>() {
-                @Override
-                public int compare(Category o1, Category o2) {
-                    CategorySchema.CATEGORY_TYPES category_types = CategorySchema.CATEGORY_TYPES.valueOf(o1.getCatType());
-                    return category_types.compareTo(CategorySchema.CATEGORY_TYPES.valueOf(o2.getCatType()));
-                }
-            });
-
-            cMap.clear(); // don't want this anymore
-
-            transactionMap = tMap;
-            categoriesList = cList;
-
-            mHandler.obtainMessage(H_KEY_UPDATE_DS).sendToTarget();
-
-        }
+        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        navigationView.setNavigationItemSelectedListener(this);
     }
-
-
-    private void printLog(String log) {
-        SharedFunctions.printLog(log);
-    }
-
 
     private void findingViews() {
-        mTransactionList = (ExpandableListView) findViewById(R.id.ac_ha_elv_transaction);
-        tvAddExpense = (TextView) findViewById(R.id.ac_home_tv_add_expense);
-        tvAddIncome = (TextView) findViewById(R.id.ac_home_tv_add_income);
+        mToolBar = (Toolbar) findViewById(R.id.toolbar);
+        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        mPager = (ViewPager) findViewById(R.id.ac_home_vp);
+        tvNoTransDetails = (TextView) findViewById(R.id.ac_home_tv_no_trans_details);
+//        tvAddExpense = (TextView) findViewById(R.id.ac_home_tv_add_expense);
+//        tvAddIncome = (TextView) findViewById(R.id.ac_home_tv_add_income);
+//        tvBalance = (TextView) findViewById(R.id.ac_home_tv_balance);
+
     }
 
     private void settingListeners() {
-        tvAddExpense.setOnClickListener(this);
-        tvAddIncome.setOnClickListener(this);
+//        tvAddExpense.setOnClickListener(this);
+//        tvAddIncome.setOnClickListener(this);
     }
 
+    @Override
+    public void onClick(View v) {
+//        Bundle bundle;
+//        switch (v.getId()) {
+//            case R.id.ac_home_tv_add_expense:
+//                bundle = new Bundle();
+//                bundle.putString(TransactionProcessor.KEY_CAT_TYPE, CategorySchema.CATEGORY_TYPES.EXPENSE.toString());
+//                TransactionProcessor.show(getSupportFragmentManager(), bundle, this);
+//                break;
+//            case R.id.ac_home_tv_add_income:
+//                bundle = new Bundle();
+//                bundle.putString(TransactionProcessor.KEY_CAT_TYPE, CategorySchema.CATEGORY_TYPES.INCOME.toString());
+//                TransactionProcessor.show(getSupportFragmentManager(), bundle, this);
+//                break;
+//        }
+    }
 
     @Override
     public void onBackPressed() {
@@ -212,63 +166,74 @@ public class HomeActivity extends AppCompatActivity
     }
 
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.home, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    public void onClick(View v) {
-        Bundle bundle;
-        switch (v.getId()) {
-            case R.id.ac_home_tv_add_expense:
-                bundle = new Bundle();
-                bundle.putString(TransactionProcessor.KEY_CAT_TYPE, CategorySchema.CATEGORY_TYPES.EXPENSE.toString());
-                TransactionProcessor.show(getSupportFragmentManager(), bundle, this);
-                break;
-            case R.id.ac_home_tv_add_income:
-                bundle = new Bundle();
-                bundle.putString(TransactionProcessor.KEY_CAT_TYPE, CategorySchema.CATEGORY_TYPES.INCOME.toString());
-                TransactionProcessor.show(getSupportFragmentManager(), bundle, this);
-                break;
-        }
-    }
-
-    @Override
-    public void onProcessComplete() {
-        new TransactionLoader(Transaction.QUERY_ALL_TRANSACTION).start();
-    }
-
-
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.
-        int id = item.getItemId();
 
-        if (id == R.id.nav_camera) {
-            // Handle the camera action
-        } else if (id == R.id.nav_gallery) {
+        switch (item.getItemId()) {
+            case R.id.menu_home_drawer_daily:
+                new TransactionBatchLoader(TransactionBatchLoader.FREQUENCY_DAILY).start();
+                lastSelectedFrequency = TransactionBatchLoader.FREQUENCY_DAILY;
+                break;
+            case R.id.menu_home_drawer_weekly:
+                new TransactionBatchLoader(TransactionBatchLoader.FREQUENCY_WEEKLY).start();
+                lastSelectedFrequency = TransactionBatchLoader.FREQUENCY_WEEKLY;
+                break;
+            case R.id.menu_home_drawer_monthly:
+                new TransactionBatchLoader(TransactionBatchLoader.FREQUENCY_MONTHLY).start();
+                lastSelectedFrequency = TransactionBatchLoader.FREQUENCY_MONTHLY;
+                break;
 
-        } else if (id == R.id.nav_slideshow) {
+            case R.id.menu_home_drawer_categories:
+                break;
 
-        } else if (id == R.id.nav_manage) {
-
-        } else if (id == R.id.nav_share) {
-
-        } else if (id == R.id.nav_send) {
 
         }
-
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        drawer.closeDrawer(GravityCompat.START);
+        mDrawerLayout.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+
+    @Override
+    public void onProcessComplete() {
+        new TransactionBatchLoader(lastSelectedFrequency).start();
+    }
+
+
+
+    private class TransactionBatchLoader extends Thread {
+
+        static final String FREQUENCY_DAILY = "frequency_daily";
+        static final String FREQUENCY_WEEKLY = "frequency_weekly";
+        static final String FREQUENCY_MONTHLY = "frequency_monthly";
+
+        private String frequency;
+
+        TransactionBatchLoader(String frequency) {
+            this.frequency = frequency;
+        }
+
+        @Override
+        public void run() {
+            switch (frequency) {
+                case FREQUENCY_DAILY:
+                    mDataSet = Transaction.getAllDaysWithTransaction(mDBManager.getReadableDatabase(), true);
+                    break;
+                case FREQUENCY_WEEKLY:
+                    mDataSet = Transaction.getAllWeeksWithTransaction(mDBManager.getReadableDatabase(), true);
+                    break;
+                case FREQUENCY_MONTHLY:
+                    mDataSet = Transaction.getAllMonthWithTransaction(mDBManager.getReadableDatabase(), true);
+                    break;
+
+            }
+            mHandler.obtainMessage(H_KEY_UPDATE_DS).sendToTarget();
+        }
+    }
+
+    private void printLog(String log) {
+        SharedFunctions.printLog(log);
     }
 
 

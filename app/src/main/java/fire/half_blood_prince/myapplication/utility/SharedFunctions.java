@@ -12,6 +12,7 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.TextView;
 
+import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.Calendar;
 
@@ -27,11 +28,12 @@ public class SharedFunctions {
      * @param number number in string type
      * @return int number upon successful parsing , 0 otherwise
      */
-    public static int parseInt(String number) {
+    public static Double parseDouble(String number) {
         try {
-            return Integer.parseInt(number);
+
+            return Double.parseDouble(number);
         } catch (Exception ignored) {
-            return 0;
+            return 0.0;
         }
     }
 
@@ -92,6 +94,19 @@ public class SharedFunctions {
                 .setTitle(title)
                 .setSingleChoiceItems(mDataSet, Arrays.asList(mDataSet).indexOf(selected), listener)
                 .show();
+    }
+
+    public static void showAlertDialog(Context context,String title,String message,String posBtn,String negBtn,DialogInterface.OnClickListener listener){
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+
+        if (null != title) builder.setTitle(title);
+        if (null != message) builder.setMessage(message);
+        if (null != posBtn) builder.setPositiveButton(posBtn,listener);
+        if (null != negBtn) builder.setNegativeButton(negBtn,listener);
+
+        builder.create().show();
+
     }
 
 

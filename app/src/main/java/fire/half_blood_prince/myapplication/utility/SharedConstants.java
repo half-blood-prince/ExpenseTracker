@@ -15,8 +15,11 @@ public interface SharedConstants {
     int H_KEY_POPULATE_DS = 0xA0;
     int H_KEY_UPDATE_DS = 0xA1;
 
+    String MAIN_PREF = "main_pref";
+
     String KEY_MODE = "mode";
     String MODE_INSERT = "insert_mode";
+    String MODE_VIEW = "view_mode";
     String MODE_EDIT = "edit_mode";
     String MODE_DELETE = "delete_mode";
 }

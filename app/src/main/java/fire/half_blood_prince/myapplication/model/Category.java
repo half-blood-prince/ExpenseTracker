@@ -27,6 +27,11 @@ public class Category implements CategorySchema {
     public Category() {
     }
 
+    public Category(String catName, String catType) {
+        this.catName = catName;
+        this.catType = catType;
+    }
+
     /**
      * constrcuts the Category object from cursor
      * Note Cursor must contain all column values
@@ -47,8 +52,11 @@ public class Category implements CategorySchema {
     public static ArrayList<String> getCatNames(SQLiteDatabase database, CATEGORY_TYPES catType, boolean canClose) {
         ArrayList<String> categoryList = new ArrayList<>();
 
-        Cursor cursor = database.rawQuery(catType.equals(CATEGORY_TYPES.INCOME) ?
-                        QUERY_GET_ALL_INCONE_CATEGORY : QUERY_GET_ALL_EXPENSE_CATEGORY
+        Cursor cursor = database.rawQuery(
+                null != catType ? (catType.equals(CATEGORY_TYPES.INCOME) ?
+                        QUERY_GET_ALL_INCONE_CATEGORY : QUERY_GET_ALL_EXPENSE_CATEGORY) :
+                        QUERY_GET_ALL
+
                 , null);
 
         if (null != cursor && cursor.moveToFirst()) {
@@ -93,7 +101,6 @@ public class Category implements CategorySchema {
         long primaryKey;
 
         ContentValues values = getValues();
-        values.remove(C_ID);
 
         primaryKey = database.insert(TABLE_CATEGORY, null, values);
 
@@ -103,9 +110,8 @@ public class Category implements CategorySchema {
     }
 
     /**
-     *
      * @param database database object
-     * @param catID id to get the category details
+     * @param catID    id to get the category details
      * @param canClose flag used to determine whether the databae object should be closed or not
      * @return category object upon suucessful find , null otherwise
      */
@@ -127,9 +133,10 @@ public class Category implements CategorySchema {
         return category;
     }
 
+
     private ContentValues getValues() {
         ContentValues values = new ContentValues();
-        values.put(C_ID, id);
+
         values.put(CAT_NAME, catName);
         values.put(CAT_TYPE, catType);
         return values;
@@ -146,6 +153,22 @@ public class Category implements CategorySchema {
             catTypes[i++] = ct.toString();
 
         return catTypes;
+    }
+
+
+    public static void seed(SQLiteDatabase database, boolean canClose) {
+
+        new Category("Food", CATEGORY_TYPES.EXPENSE.toString()).save(database, false);
+        new Category("Shopping", CATEGORY_TYPES.EXPENSE.toString()).save(database, false);
+        new Category("Bills", CATEGORY_TYPES.EXPENSE.toString()).save(database, false);
+        new Category("Fuel", CATEGORY_TYPES.EXPENSE.toString()).save(database, false);
+        new Category("Entertaiment", CATEGORY_TYPES.EXPENSE.toString()).save(database, false);
+        new Category("Hospital", CATEGORY_TYPES.EXPENSE.toString()).save(database, false);
+        new Category("Insurance", CATEGORY_TYPES.EXPENSE.toString()).save(database, false);
+        new Category("Salary", CATEGORY_TYPES.INCOME.toString()).save(database, false);
+        new Category("Deposits", CATEGORY_TYPES.INCOME.toString()).save(database, false);
+
+        if (canClose) database.close();
     }
 
     @Override

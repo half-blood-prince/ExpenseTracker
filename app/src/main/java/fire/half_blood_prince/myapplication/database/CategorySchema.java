@@ -21,6 +21,7 @@ public interface CategorySchema {
             + CAT_TYPE + " VARCHAR(20) " +
             " ) ";
 
+    String QUERY_GET_ALL = "SELECT * FROM " + TABLE_CATEGORY ;
     String QUERY_GET_ALL_INCONE_CATEGORY = "SELECT * FROM " + TABLE_CATEGORY + " WHERE " + CAT_TYPE + " = " + "'" + CATEGORY_TYPES.INCOME + "'";
     String QUERY_GET_ALL_EXPENSE_CATEGORY = "SELECT * FROM " + TABLE_CATEGORY + " WHERE " + CAT_TYPE + " = " + "'" + CATEGORY_TYPES.EXPENSE + "'";
 

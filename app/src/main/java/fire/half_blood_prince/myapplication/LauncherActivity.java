@@ -17,10 +17,8 @@ public class LauncherActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         if (isUserLoggedIn()) {
-            Toast.makeText(this, "User Logged in ", Toast.LENGTH_SHORT).show();
             startActivity(new Intent(this, HomeActivity.class));
         } else {
-            Toast.makeText(this, "User NOT Logged in", Toast.LENGTH_SHORT).show();
             startActivity(new Intent(this, Login.class));
         }
 

@@ -1,36 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <group android:checkableBehavior="single">
-        <item
-            android:id="@+id/nav_camera"
-            android:icon="@drawable/ic_menu_camera"
-            android:title="Import" />
-        <item
-            android:id="@+id/nav_gallery"
-            android:icon="@drawable/ic_menu_gallery"
-            android:title="Gallery" />
-        <item
-            android:id="@+id/nav_slideshow"
-            android:icon="@drawable/ic_menu_slideshow"
-            android:title="Slideshow" />
-        <item
-            android:id="@+id/nav_manage"
-            android:icon="@drawable/ic_menu_manage"
-            android:title="Tools" />
-    </group>
 
-    <item android:title="Communicate">
+    <item
+        android:checkableBehavior="single"
+        android:title="@string/statistics">
         <menu>
             <item
-                android:id="@+id/nav_share"
-                android:icon="@drawable/ic_menu_share"
-                android:title="Share" />
+                android:id="@+id/menu_home_drawer_daily"
+                android:title="@string/daily"
+
+                />
             <item
-                android:id="@+id/nav_send"
-                android:icon="@drawable/ic_menu_send"
-                android:title="Send" />
+                android:id="@+id/menu_home_drawer_weekly"
+                android:title="@string/weekly" />
+            <item
+                android:id="@+id/menu_home_drawer_monthly"
+                android:title="@string/monthly" />
         </menu>
+
     </item>
 
+    <item android:title="@string/others">
+        <menu>
+            <item
+                android:id="@+id/menu_home_drawer_categories"
+                android:title="@string/categories" />
+        </menu>
+    </item>
 </menu>
+
+

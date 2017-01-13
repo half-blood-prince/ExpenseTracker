@@ -5,11 +5,13 @@ import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.TextInputEditText;
 import android.support.design.widget.TextInputLayout;
 import android.support.v4.app.FragmentManager;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatDialog;
 import android.support.v7.app.AppCompatDialogFragment;
 import android.view.LayoutInflater;
@@ -44,8 +46,8 @@ public class TransactionProcessor extends AppCompatDialogFragment implements Vie
 
     private Activity mActivity;
 
-    private ImageView imgClose;
-    private TextView tvToolbarTitle, tvAction;
+    private ImageView imgClose, imgSave, imgEdit, imgDelete;
+    private TextView tvToolbarTitle;
     private TextInputLayout tilTitle, tilAmount, tilDate, tilCategory;
     private TextInputEditText tieTitle, tieAmount, tieNotes, tieDate, tieCategory;
     private ImageView imgAddCategory;
@@ -59,6 +61,7 @@ public class TransactionProcessor extends AppCompatDialogFragment implements Vie
     private ProcessorPipeline mPipeline;
 
     private String mode;
+    private long id;
 
     public static void show(FragmentManager fManager, Bundle args, ProcessorPipeline mPipeline) {
 
@@ -83,6 +86,7 @@ public class TransactionProcessor extends AppCompatDialogFragment implements Vie
 
         Bundle arguments = getArguments();
         mode = arguments.getString(KEY_MODE, MODE_INSERT);
+        id = arguments.getLong(KEY_ID, -1);
 
         catType = CategorySchema.CATEGORY_TYPES.valueOf(
                 arguments.getString(KEY_CAT_TYPE, CategorySchema.CATEGORY_TYPES.EXPENSE.toString()
@@ -99,26 +103,60 @@ public class TransactionProcessor extends AppCompatDialogFragment implements Vie
         findingViews(dialogView);
         settingListeners();
 
+        if (mode.equals(MODE_EDIT)) {
 
+            changeActionVisibility(0, 1, 1);
+            disableAllFields();
 
-        if (mode.equals(MODE_DELETE) || mode.equals(MODE_DELETE)) {
-            int pk = arguments.getInt(Transaction.CID);
-            Transaction transaction = Transaction.get(mDBManager.getReadableDatabase(), pk, true);
-            setFields(transaction);
+            SQLiteDatabase database = mDBManager.getReadableDatabase();
+            Transaction transaction = Transaction.get(database, id, false);
+            if (null != transaction) {
+                catType = transaction.getCatType(database, true);
+                setFields(transaction);
+            } else {
+                showToast(getString(R.string.problem_open_trans));
+                dismiss();
+            }
 
+        } else {
+            changeActionVisibility(1, 0, 0);
         }
-
-//        mActivity.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
 
         return dialog;
     }
 
+    private void changeActionVisibility(int a, int b, int c) {
+
+        imgSave.setVisibility(a == 1 ? View.VISIBLE : View.GONE);
+        imgEdit.setVisibility(b == 1 ? View.VISIBLE : View.GONE);
+        imgDelete.setVisibility(c == 1 ? View.VISIBLE : View.GONE);
+
+    }
+
+    private void enableAllFields() {
+        changeFieldState(true);
+    }
+
+    private void disableAllFields() {
+        changeFieldState(false);
+    }
+
+    private void changeFieldState(boolean state) {
+        tieTitle.setEnabled(state);
+        tieAmount.setEnabled(state);
+        tieNotes.setEnabled(state);
+        tieDate.setEnabled(state);
+        tieCategory.setEnabled(state);
+        imgAddCategory.setEnabled(state);
+    }
 
     private void findingViews(View view) {
 
         imgClose = (ImageView) view.findViewById(R.id.la_df_tp_img_close);
+        imgSave = (ImageView) view.findViewById(R.id.la_df_tp_img_save);
+        imgEdit = (ImageView) view.findViewById(R.id.la_df_tp_img_edit);
+        imgDelete = (ImageView) view.findViewById(R.id.la_df_tp_img_delete);
         tvToolbarTitle = (TextView) view.findViewById(R.id.la_df_tp_tv_toolbar_title);
-        tvAction = (TextView) view.findViewById(R.id.la_df_tp_tv_action);
 
         tilTitle = (TextInputLayout) view.findViewById(R.id.la_df_tp_til_title);
         tilAmount = (TextInputLayout) view.findViewById(R.id.la_df_tp_til_amount);
@@ -136,7 +174,9 @@ public class TransactionProcessor extends AppCompatDialogFragment implements Vie
 
     private void settingListeners() {
         imgClose.setOnClickListener(this);
-        tvAction.setOnClickListener(this);
+        imgSave.setOnClickListener(this);
+        imgEdit.setOnClickListener(this);
+        imgDelete.setOnClickListener(this);
 
         tieDate.setOnClickListener(this);
         tieCategory.setOnClickListener(this);
@@ -150,18 +190,41 @@ public class TransactionProcessor extends AppCompatDialogFragment implements Vie
             case R.id.la_df_tp_img_close:
                 dismiss();
                 break;
-            case R.id.la_df_tp_tv_action:
-                switch (mode){
+            case R.id.la_df_tp_img_save:
+                switch (mode) {
                     case MODE_INSERT:
                         saveTransaction();
                         break;
                     case MODE_EDIT:
+                        updateTransaction();
                         break;
-                    case MODE_DELETE:
-                        break;
+
                 }
+                break;
+            case R.id.la_df_tp_img_edit:
+                changeActionVisibility(1, 0, 1);
+                enableAllFields();
+                break;
+            case R.id.la_df_tp_img_delete:
+
+                SharedFunctions.showAlertDialog(mActivity, null, "Are you sure want to delete this transaction", "Delete", "Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        if (which == AlertDialog.BUTTON_POSITIVE) {
+                            if (deleteTransaction()) {
+                                showToast(getString(R.string.trans_deleted));
+                                mPipeline.onProcessComplete();
+                                dismiss();
+                            } else showToast(getString(R.string.prob_deleting_trans));
+                        }
+
+                        dialog.dismiss();
+                    }
+                });
+
 
                 break;
+
 
             case R.id.la_df_tp_tie_date:
                 setDate(tieDate);
@@ -192,7 +255,10 @@ public class TransactionProcessor extends AppCompatDialogFragment implements Vie
             public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
                 editText.setText(
                         String.format(Locale.getDefault(),
-                                "%s-%s-%d", (dayOfMonth <= 9 ? "0" + dayOfMonth : String.valueOf(dayOfMonth)), ((month + 1) < 9 ? "0" + (month + 1) : (month + 1)), year)
+                                "%d-%s-%s", year,
+                                ((month + 1) < 9 ? "0" + (month + 1) : (month + 1)),
+                                (dayOfMonth <= 9 ? "0" + dayOfMonth : String.valueOf(dayOfMonth))
+                        )
                 );
             }
         });
@@ -227,7 +293,7 @@ public class TransactionProcessor extends AppCompatDialogFragment implements Vie
         Transaction transaction = validateAndConstruct();
         if (null != transaction) {
             long insert = transaction.save(mDBManager.getWritableDatabase(), true);
-            if (insert != 1) {
+            if (insert != -1) {
                 showToast(getString(R.string.trans_inserted));
                 mPipeline.onProcessComplete();
             } else showToast(getString(R.string.problem_inserting_trans));
@@ -235,18 +301,20 @@ public class TransactionProcessor extends AppCompatDialogFragment implements Vie
         }
     }
 
-    private void updateTransaction(){
-//        Transaction transaction = validateAndConstruct();
-//        if (null != transaction) {
-//
-//        }
-    }
-
-    private boolean deleteTransaction(){
+    private void updateTransaction() {
         Transaction transaction = validateAndConstruct();
         if (null != transaction) {
-
+            if (transaction.update(mDBManager.getWritableDatabase(), true) > 0) {
+                showToast("Transaction updated");
+                mPipeline.onProcessComplete();
+            } else showToast("Problem occured while updating transaction");
+            dismiss();
         }
+    }
+
+    private boolean deleteTransaction() {
+        Transaction transaction = validateAndConstruct();
+        return null != transaction && (transaction.delete(mDBManager.getWritableDatabase(), true) > 0);
     }
 
     private Transaction validateAndConstruct() {
@@ -262,7 +330,9 @@ public class TransactionProcessor extends AppCompatDialogFragment implements Vie
             if (!Validation.isEmpty(getStirngFromView(tieAmount), getString(R.string.amount_req), tilAmount))
                 if (!Validation.isEmpty(getStirngFromView(tieDate), getString(R.string.date_req), tilDate))
                     if (!Validation.isEmpty(getStirngFromView(tieCategory), getString(R.string.cat_req), tilCategory)) {
+
                         transaction.setCid(Category.getId(mDBManager.getReadableDatabase(), getStirngFromView(tieCategory), true));
+                        transaction.setId(id); // only used while deleting
                         return transaction;
                     }
 
