@@ -44,7 +44,22 @@
     <string name="monthly">Monthly</string>
     <string name="others">Others</string>
     <string name="categories">Categories</string>
-    <string name="no_traans_details_available">Your Transaction details appear here \nNo Transaction details available yet \nPlease use + or - icon in the bottom bar to add \nincome and expense respectevly</string>
+    <string name="no_traans_details_available">Your Transaction details appear here \nNo Transaction details available yet \nPlease use + icon in the bottom bar\nto add your income / expense </string>
+    <string name="no_traans_details_in_frag">Your Transaction details appear here \nNo Transaction details available yet \nPlease use + or - icon in the bottom bar\nto add your income or expense respectively</string>
     <string name="logout">Logout</string>
+    <string name="balance_0_0">Balance 0.0</string>
+    <string name="no_cat">No Category to display\nPlease use the + icon to add</string>
+    <string name="problem_open_catergory">Problem occurred while opening category</string>
+    <string name="edit_category">Edit Category</string>
+    <string name="add_category">Add Category</string>
+    <string name="cat_deleted">Category deleted</string>
+    <string name="prob_deleting_cat">Problem occurred while deleting category</string>
+    <string name="cat_delete_confirm">Are you sure want to delete this category\nDeleting this category will delete all transaction associated with it</string>
+    <string name="delete">Delete</string>
+    <string name="cancel">Cancel</string>
+    <string name="edit_trans">Edit Transaction</string>
+    <string name="add_trans">Add Transaction</string>
+    <string name="category_type">Category Type</string>
+    <string name="transaction">Transaction</string>
 
 </resources>

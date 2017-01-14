@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Locale;
 
 import fire.half_blood_prince.myapplication.database.CategorySchema;
+import fire.half_blood_prince.myapplication.database.TransactionSchema;
 
 /**
  * Created by Half-Blood-Prince on 1/11/2017.
@@ -27,7 +28,7 @@ public class Category implements CategorySchema {
     public Category() {
     }
 
-    public Category(String catName, String catType) {
+    private Category(String catName, String catType) {
         this.catName = catName;
         this.catType = catType;
     }
@@ -38,7 +39,7 @@ public class Category implements CategorySchema {
      *
      * @param cursor cursor obj
      */
-    public Category(Cursor cursor) {
+    private Category(Cursor cursor) {
         id = cursor.getInt(cursor.getColumnIndex(C_ID));
         catName = cursor.getString(cursor.getColumnIndex(CAT_NAME));
         catType = cursor.getString(cursor.getColumnIndex(CAT_TYPE));
@@ -133,6 +134,29 @@ public class Category implements CategorySchema {
         return category;
     }
 
+    /**
+     * @param database database object
+     * @param canClose flag used to determine whether the databae object should be closed or not
+     * @return list of category if category available , empty list otherwise
+     */
+    public static ArrayList<Category> getAll(SQLiteDatabase database, boolean canClose) {
+
+        ArrayList<Category> mCatList = new ArrayList<>();
+
+        Cursor cursor = database.rawQuery(QUERY_GET_ALL, null);
+
+        if (null != cursor && cursor.moveToFirst()) {
+            do {
+                mCatList.add(new Category(cursor));
+            } while (cursor.moveToNext());
+            cursor.close();
+        }
+
+        if (canClose) database.close();
+
+        return mCatList;
+    }
+
 
     private ContentValues getValues() {
         ContentValues values = new ContentValues();
@@ -155,6 +179,31 @@ public class Category implements CategorySchema {
         return catTypes;
     }
 
+    /**
+     * @param database database Object
+     * @param canClose flag used to determine wheather to close the database connection or not
+     * @return no of rows affected
+     */
+    public int update(SQLiteDatabase database, boolean canClose) {
+
+        int rowsAffected = database.update(TABLE_CATEGORY, getValues(), C_ID + " = " + id, null);
+
+        if (canClose) database.close();
+
+        return rowsAffected;
+
+    }
+
+    public int delete(SQLiteDatabase database, boolean canClose) {
+
+        database.delete(TransactionSchema.TABLE_TRANSACTION, TransactionSchema.CID + " = " + id, null);
+
+        int rowsAffected = database.delete(TABLE_CATEGORY, C_ID + " = " + id, null);
+
+        if (canClose) database.close();
+
+        return rowsAffected;
+    }
 
     public static void seed(SQLiteDatabase database, boolean canClose) {
 

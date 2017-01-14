@@ -1,8 +1,6 @@
 package fire.half_blood_prince.myapplication.adapters;
 
-import android.annotation.TargetApi;
 import android.content.Context;
-import android.os.Build;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,6 +18,7 @@ import fire.half_blood_prince.myapplication.model.Transaction;
 
 /**
  * Created by Half-Blood-Prince on 1/11/2017.
+ * TransactionExpListAdapter
  */
 
 public class TransactionExpListAdapter extends BaseExpandableListAdapter {
@@ -45,7 +44,7 @@ public class TransactionExpListAdapter extends BaseExpandableListAdapter {
         this.catList = categoryArrayList;
         this.transMap = transMap;
 
-        this.mAudience =  mAudience;
+        this.mAudience = mAudience;
 
         mInflater = LayoutInflater.from(context);
 
@@ -111,15 +110,6 @@ public class TransactionExpListAdapter extends BaseExpandableListAdapter {
         return convertView;
     }
 
-    @TargetApi(Build.VERSION_CODES.N)
-    public Locale getCurrentLocale(Context context) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            return context.getResources().getConfiguration().getLocales().get(0);
-        } else {
-            //noinspection deprecation
-            return context.getResources().getConfiguration().locale;
-        }
-    }
 
     @Override
     public View getChildView(int groupPosition, int childPosition, boolean isLastChild, View convertView, ViewGroup parent) {

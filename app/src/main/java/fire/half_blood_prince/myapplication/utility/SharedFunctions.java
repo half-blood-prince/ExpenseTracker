@@ -12,7 +12,6 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.TextView;
 
-import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.Calendar;
 
@@ -96,14 +95,14 @@ public class SharedFunctions {
                 .show();
     }
 
-    public static void showAlertDialog(Context context,String title,String message,String posBtn,String negBtn,DialogInterface.OnClickListener listener){
+    public static void showAlertDialog(Context context, String title, String message, String posBtn, String negBtn, DialogInterface.OnClickListener listener) {
 
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
 
         if (null != title) builder.setTitle(title);
         if (null != message) builder.setMessage(message);
-        if (null != posBtn) builder.setPositiveButton(posBtn,listener);
-        if (null != negBtn) builder.setNegativeButton(negBtn,listener);
+        if (null != posBtn) builder.setPositiveButton(posBtn, listener);
+        if (null != negBtn) builder.setNegativeButton(negBtn, listener);
 
         builder.create().show();
 

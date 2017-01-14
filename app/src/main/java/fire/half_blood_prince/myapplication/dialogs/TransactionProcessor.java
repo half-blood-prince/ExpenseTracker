@@ -36,13 +36,13 @@ import fire.half_blood_prince.myapplication.utility.Validation;
 
 /**
  * Created by Half-Blood-Prince on 1/12/2017.
+ * TransactionProcessor will take care of inserting , editing , updating and deleting the transaction
  */
 
 public class TransactionProcessor extends AppCompatDialogFragment implements View.OnClickListener, SharedConstants {
 
     private static final String TAG = "TransactionProcessor";
     public static final String KEY_CAT_TYPE = "cat_type";
-    public static final String KEY_ID = "id";
 
     private Activity mActivity;
 
@@ -88,9 +88,11 @@ public class TransactionProcessor extends AppCompatDialogFragment implements Vie
         mode = arguments.getString(KEY_MODE, MODE_INSERT);
         id = arguments.getLong(KEY_ID, -1);
 
-        catType = CategorySchema.CATEGORY_TYPES.valueOf(
-                arguments.getString(KEY_CAT_TYPE, CategorySchema.CATEGORY_TYPES.EXPENSE.toString()
-                ));
+        String strCatType = arguments.getString(KEY_CAT_TYPE, null);
+        if (null != strCatType)
+            catType = CategorySchema.CATEGORY_TYPES.valueOf(
+                    strCatType);
+        else catType = null;
 
         categories = Category.getCatNames(mDBManager.getReadableDatabase(), catType, true);
 
@@ -105,6 +107,7 @@ public class TransactionProcessor extends AppCompatDialogFragment implements Vie
 
         if (mode.equals(MODE_EDIT)) {
 
+            tvToolbarTitle.setText(getString(R.string.edit_trans));
             changeActionVisibility(0, 1, 1);
             disableAllFields();
 
@@ -119,6 +122,7 @@ public class TransactionProcessor extends AppCompatDialogFragment implements Vie
             }
 
         } else {
+            tvToolbarTitle.setText(getString(R.string.add_trans));
             changeActionVisibility(1, 0, 0);
         }
 
@@ -152,11 +156,11 @@ public class TransactionProcessor extends AppCompatDialogFragment implements Vie
 
     private void findingViews(View view) {
 
-        imgClose = (ImageView) view.findViewById(R.id.la_df_tp_img_close);
+        imgClose = (ImageView) view.findViewById(R.id.frag_cat_viewer_img_close);
         imgSave = (ImageView) view.findViewById(R.id.la_df_tp_img_save);
         imgEdit = (ImageView) view.findViewById(R.id.la_df_tp_img_edit);
         imgDelete = (ImageView) view.findViewById(R.id.la_df_tp_img_delete);
-        tvToolbarTitle = (TextView) view.findViewById(R.id.la_df_tp_tv_toolbar_title);
+        tvToolbarTitle = (TextView) view.findViewById(R.id.frag_cat_viewer_tv_toolbar_title);
 
         tilTitle = (TextInputLayout) view.findViewById(R.id.la_df_tp_til_title);
         tilAmount = (TextInputLayout) view.findViewById(R.id.la_df_tp_til_amount);
@@ -187,7 +191,7 @@ public class TransactionProcessor extends AppCompatDialogFragment implements Vie
     public void onClick(View v) {
         SharedFunctions.hideKeypad(mActivity, v);
         switch (v.getId()) {
-            case R.id.la_df_tp_img_close:
+            case R.id.frag_cat_viewer_img_close:
                 dismiss();
                 break;
             case R.id.la_df_tp_img_save:
@@ -202,7 +206,7 @@ public class TransactionProcessor extends AppCompatDialogFragment implements Vie
                 }
                 break;
             case R.id.la_df_tp_img_edit:
-                changeActionVisibility(1, 0, 1);
+                changeActionVisibility(1, 0, 0);
                 enableAllFields();
                 break;
             case R.id.la_df_tp_img_delete:
@@ -280,6 +284,7 @@ public class TransactionProcessor extends AppCompatDialogFragment implements Vie
 
     private void addCategory() {
         Bundle bundle = new Bundle();
+        bundle.putString(KEY_MODE, MODE_INSERT);
         CategoryProcessor.show(getFragmentManager(), bundle, new ProcessorPipeline() {
             @Override
             public void onProcessComplete() {
@@ -332,7 +337,7 @@ public class TransactionProcessor extends AppCompatDialogFragment implements Vie
                     if (!Validation.isEmpty(getStirngFromView(tieCategory), getString(R.string.cat_req), tilCategory)) {
 
                         transaction.setCid(Category.getId(mDBManager.getReadableDatabase(), getStirngFromView(tieCategory), true));
-                        transaction.setId(id); // only used while deleting
+                        transaction.setId(id); // only used while deleting and updating
                         return transaction;
                     }
 
@@ -347,7 +352,7 @@ public class TransactionProcessor extends AppCompatDialogFragment implements Vie
 
     @Override
     public void onDismiss(DialogInterface dialog) {
-        if (mDBManager != null) mDBManager.close();
+//        if (mDBManager != null) mDBManager.close();
         super.onDismiss(dialog);
     }
 }

@@ -1,5 +1,6 @@
 package fire.half_blood_prince.myapplication.utility;
 
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
 
@@ -17,6 +18,7 @@ public interface SharedConstants {
 
     String MAIN_PREF = "main_pref";
 
+    String KEY_ID = "id";
     String KEY_MODE = "mode";
     String MODE_INSERT = "insert_mode";
     String MODE_VIEW = "view_mode";

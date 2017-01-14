@@ -15,6 +15,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ExpandableListView;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.text.DecimalFormat;
@@ -22,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Locale;
 
 import fire.half_blood_prince.myapplication.R;
 import fire.half_blood_prince.myapplication.adapters.TransactionExpListAdapter;
@@ -48,15 +50,24 @@ public class TransactionViewer extends Fragment implements SharedConstants,
 
     private ExpandableListView mTransactionList;
 
-    private TextView tvAddExpense, tvAddIncome, tvBalance;
+    private ImageView imgAddExpense, imgAddIncome;
+
+    private TextView tvBalance;
+
+    private TextView tvNoTransDetails;
 
     private DatabaseManager mDBManager;
+
+    private double income = 0, expense = 0, balance;
+
+    private boolean showBalanceOnly = true;
 
     private TransactionExpListAdapter mAdapter;
     private HashMap<Integer, ArrayList<Transaction>> transactionMap = new HashMap<>();
     private ArrayList<Category> categoriesList = new ArrayList<>();
 
     private String moneySymbol = "₹"; //Default case
+
 
     public TransactionViewer() {
     }
@@ -133,15 +144,17 @@ public class TransactionViewer extends Fragment implements SharedConstants,
 
     private void findingViews(View view) {
         mTransactionList = (ExpandableListView) view.findViewById(R.id.ac_ha_elv_transaction);
-        tvAddExpense = (TextView) view.findViewById(R.id.frag_trans_viewer_tv_add_expense);
-        tvAddIncome = (TextView) view.findViewById(R.id.frag_trans_viewer_tv_add_income);
+        tvNoTransDetails = (TextView) view.findViewById(R.id.ac_ha_tv_no_trans);
+        imgAddExpense = (ImageView) view.findViewById(R.id.frag_trans_viewer_img_add_expense);
+        imgAddIncome = (ImageView) view.findViewById(R.id.frag_trans_viewer_img_add_income);
         tvBalance = (TextView) view.findViewById(R.id.frag_trans_viewer_tv_balance);
 
     }
 
     private void settingListeners() {
-        tvAddExpense.setOnClickListener(this);
-        tvAddIncome.setOnClickListener(this);
+        imgAddExpense.setOnClickListener(this);
+        imgAddIncome.setOnClickListener(this);
+        tvBalance.setOnClickListener(this);
     }
 
 
@@ -151,8 +164,11 @@ public class TransactionViewer extends Fragment implements SharedConstants,
             public void handleMessage(Message msg) {
                 switch (msg.what) {
                     case H_KEY_UPDATE_DS:
+
+                        tvNoTransDetails.setVisibility(categoriesList.isEmpty()?View.VISIBLE:View.GONE);
                         mAdapter.setDataSet(categoriesList, transactionMap);
                         updateBalanceInfo();
+
                         break;
                 }
                 super.handleMessage(msg);
@@ -160,9 +176,10 @@ public class TransactionViewer extends Fragment implements SharedConstants,
         };
     }
 
+
+
     private void updateBalanceInfo() {
-        double income, expense, balance;
-        income = expense = 0;
+
         final String incomeType = CategorySchema.CATEGORY_TYPES.INCOME.toString();
         final String expenceType = CategorySchema.CATEGORY_TYPES.EXPENSE.toString();
         for (Category category : categoriesList) {
@@ -174,7 +191,7 @@ public class TransactionViewer extends Fragment implements SharedConstants,
         }
         balance = income - expense;
 
-        tvBalance.setText(String.format("Balance : %s %s", moneySymbol, balance));
+        toggleBalanceView();
     }
 
     /**
@@ -196,17 +213,35 @@ public class TransactionViewer extends Fragment implements SharedConstants,
     public void onClick(View v) {
         Bundle bundle;
         switch (v.getId()) {
-            case R.id.frag_trans_viewer_tv_add_expense:
+            case R.id.frag_trans_viewer_img_add_expense:
                 bundle = new Bundle();
                 bundle.putString(TransactionProcessor.KEY_CAT_TYPE, CategorySchema.CATEGORY_TYPES.EXPENSE.toString());
                 TransactionProcessor.show(getFragmentManager(), bundle, this);
                 break;
-            case R.id.frag_trans_viewer_tv_add_income:
+            case R.id.frag_trans_viewer_img_add_income:
                 bundle = new Bundle();
                 bundle.putString(TransactionProcessor.KEY_CAT_TYPE, CategorySchema.CATEGORY_TYPES.INCOME.toString());
                 TransactionProcessor.show(getFragmentManager(), bundle, this);
                 break;
+            case R.id.frag_trans_viewer_tv_balance:
+                toggleBalanceView();
+                break;
         }
+    }
+
+
+
+    private void toggleBalanceView() {
+        if (showBalanceOnly) {
+            tvBalance.setText(String.format(Locale.getDefault(), "Balance : %s %.2f", moneySymbol, balance));
+        } else {
+
+            tvBalance.setText(
+                    String.format(Locale.getDefault(), "Income  : %4s %.2f\nExpence : %4s %.2f\nBalance : %4s %.2f", moneySymbol, income, moneySymbol, expense, moneySymbol, balance)
+            );
+        }
+
+        showBalanceOnly = !showBalanceOnly;
     }
 
 

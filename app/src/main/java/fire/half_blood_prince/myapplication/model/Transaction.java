@@ -7,13 +7,12 @@ import android.support.annotation.Nullable;
 
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Locale;
 
 import fire.half_blood_prince.myapplication.database.CategorySchema;
 import fire.half_blood_prince.myapplication.database.TransactionSchema;
 import fire.half_blood_prince.myapplication.utility.SharedConstants;
-import fire.half_blood_prince.myapplication.utility.SharedFunctions;
 
 /**
  * Created by Half-Blood-Prince on 1/11/2017.
@@ -32,8 +31,6 @@ public class Transaction implements TransactionSchema, SharedConstants {
     public Transaction() {
     }
 
-    public static final String QUERY_ALL_TRANSACTION = "SELECT * FROM " + TransactionSchema.TABLE_TRANSACTION + " AS T " + " INNER JOIN " + CategorySchema.TABLE_CATEGORY + " AS C"
-            + " ON " + "C." + CategorySchema.C_ID + " = " + "T." + TransactionSchema.CID;
 
     /**
      * Cursor must be initialized and should have every column in it , otherwise error will be thrown
@@ -133,7 +130,7 @@ public class Transaction implements TransactionSchema, SharedConstants {
      * @param canClose flag used to determine wheather to close the database connection or not
      * @return maxDate , null when no date to be found
      */
-    public static String getMaxDate(SQLiteDatabase database, boolean canClose) {
+    private static String getMaxDate(SQLiteDatabase database, boolean canClose) {
 
         String maxDate = null;
 
@@ -156,7 +153,7 @@ public class Transaction implements TransactionSchema, SharedConstants {
      * @param canClose flag used to determine wheather to close the database connection or not
      * @return minDate , null when no date to be found
      */
-    public static String getMinDate(SQLiteDatabase database, boolean canClose) {
+    private static String getMinDate(SQLiteDatabase database, boolean canClose) {
 
         String minDate = null;
 
@@ -307,7 +304,7 @@ public class Transaction implements TransactionSchema, SharedConstants {
 
         ArrayList<String> dayList;
 
-        HashMap<String, String> daysMap = new HashMap<>();
+        LinkedHashMap<String, String> daysMap = new LinkedHashMap<>();
 
         String q = "SELECT " + TransactionSchema.DATE + " FROM " + TransactionSchema.TABLE_TRANSACTION
                 + " ORDER BY " + TransactionSchema.DATE;
@@ -321,7 +318,7 @@ public class Transaction implements TransactionSchema, SharedConstants {
                 String date = cursor.getString(cursor.getColumnIndex(TransactionSchema.DATE));
                 daysMap.put(date, date);
 
-                //  printLog("DATE IN DB" + date);
+//                printLog("DATE IN DB" + date);
 
             } while (cursor.moveToNext());
 
@@ -333,9 +330,9 @@ public class Transaction implements TransactionSchema, SharedConstants {
         return dayList;
     }
 
-    private static void printLog(String log) {
-        SharedFunctions.printLog(log);
-    }
+//    private static void printLog(String log) {
+//        SharedFunctions.printLog(log);
+//    }
 
 
     @Override

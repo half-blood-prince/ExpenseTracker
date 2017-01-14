@@ -5,6 +5,8 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.view.ViewPager;
@@ -21,10 +23,11 @@ import java.util.ArrayList;
 import fire.half_blood_prince.myapplication.adapters.TransactionVPAdapter;
 import fire.half_blood_prince.myapplication.database.DatabaseManager;
 import fire.half_blood_prince.myapplication.dialogs.ProcessorPipeline;
+import fire.half_blood_prince.myapplication.dialogs.TransactionProcessor;
+import fire.half_blood_prince.myapplication.fragments.CategoryViewer;
 import fire.half_blood_prince.myapplication.model.Category;
 import fire.half_blood_prince.myapplication.model.Transaction;
 import fire.half_blood_prince.myapplication.utility.SharedConstants;
-import fire.half_blood_prince.myapplication.utility.SharedFunctions;
 
 public class HomeActivity extends AppCompatActivity
         implements SharedConstants, NavigationView.OnNavigationItemSelectedListener,
@@ -39,20 +42,19 @@ public class HomeActivity extends AppCompatActivity
 
     private TextView tvNoTransDetails;
 
+    private FloatingActionButton fabAddTransaction;
+
     private TransactionVPAdapter mAdapter;
 
-    private ArrayList<String> mDataSet = new ArrayList<String>();
+    private ArrayList<String> mDataSet = new ArrayList<>();
 
 //    private TextView tvAddExpense, tvAddIncome, tvBalance;
 
     private Handler mHandler;
 
-    private DatabaseManager mDBManager;
-
     private String lastSelectedFrequency = TransactionBatchLoader.FREQUENCY_DAILY;
 
     private static final String KEY_CAT_SEED_STATUS = "is_cat_seeded";
-
 
 
     @Override
@@ -60,10 +62,8 @@ public class HomeActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
 
-        mDBManager = new DatabaseManager(this);
         mHandler = getHandler();
-
-
+        
         findingViews();
 
         setSupportActionBar(mToolBar);
@@ -95,9 +95,11 @@ public class HomeActivity extends AppCompatActivity
                     case H_KEY_UPDATE_DS:
                         if (mDataSet.isEmpty()) {
                             tvNoTransDetails.setVisibility(View.VISIBLE);
+                            fabAddTransaction.setVisibility(View.VISIBLE);
                             mPager.setVisibility(View.GONE);
                         } else {
                             tvNoTransDetails.setVisibility(View.GONE);
+                            fabAddTransaction.setVisibility(View.GONE);
                             mPager.setVisibility(View.VISIBLE);
                         }
                         mAdapter.setDataSet(mDataSet);
@@ -126,32 +128,24 @@ public class HomeActivity extends AppCompatActivity
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         mPager = (ViewPager) findViewById(R.id.ac_home_vp);
         tvNoTransDetails = (TextView) findViewById(R.id.ac_home_tv_no_trans_details);
-//        tvAddExpense = (TextView) findViewById(R.id.ac_home_tv_add_expense);
-//        tvAddIncome = (TextView) findViewById(R.id.ac_home_tv_add_income);
-//        tvBalance = (TextView) findViewById(R.id.ac_home_tv_balance);
-
+        fabAddTransaction = (FloatingActionButton) findViewById(R.id.ac_home_fab);
     }
 
     private void settingListeners() {
-//        tvAddExpense.setOnClickListener(this);
-//        tvAddIncome.setOnClickListener(this);
+        fabAddTransaction.setOnClickListener(this);
     }
 
     @Override
     public void onClick(View v) {
-//        Bundle bundle;
-//        switch (v.getId()) {
-//            case R.id.ac_home_tv_add_expense:
-//                bundle = new Bundle();
-//                bundle.putString(TransactionProcessor.KEY_CAT_TYPE, CategorySchema.CATEGORY_TYPES.EXPENSE.toString());
-//                TransactionProcessor.show(getSupportFragmentManager(), bundle, this);
-//                break;
-//            case R.id.ac_home_tv_add_income:
-//                bundle = new Bundle();
-//                bundle.putString(TransactionProcessor.KEY_CAT_TYPE, CategorySchema.CATEGORY_TYPES.INCOME.toString());
-//                TransactionProcessor.show(getSupportFragmentManager(), bundle, this);
-//                break;
-//        }
+        Bundle bundle;
+        switch (v.getId()) {
+            case R.id.ac_home_fab:
+                bundle = new Bundle();
+                bundle.putString(TransactionProcessor.KEY_CAT_TYPE, null);
+                TransactionProcessor.show(getSupportFragmentManager(), bundle, this);
+                break;
+
+        }
     }
 
     @Override
@@ -166,10 +160,8 @@ public class HomeActivity extends AppCompatActivity
     }
 
 
-    @SuppressWarnings("StatementWithEmptyBody")
     @Override
-    public boolean onNavigationItemSelected(MenuItem item) {
-        // Handle navigation view item clicks here.
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
 
         switch (item.getItemId()) {
             case R.id.menu_home_drawer_daily:
@@ -186,6 +178,7 @@ public class HomeActivity extends AppCompatActivity
                 break;
 
             case R.id.menu_home_drawer_categories:
+                CategoryViewer.show(getSupportFragmentManager());
                 break;
 
 
@@ -199,7 +192,6 @@ public class HomeActivity extends AppCompatActivity
     public void onProcessComplete() {
         new TransactionBatchLoader(lastSelectedFrequency).start();
     }
-
 
 
     private class TransactionBatchLoader extends Thread {
@@ -216,25 +208,27 @@ public class HomeActivity extends AppCompatActivity
 
         @Override
         public void run() {
+            DatabaseManager databaseManager = new DatabaseManager(HomeActivity.this); // to avoid IllegalState Exception
             switch (frequency) {
                 case FREQUENCY_DAILY:
-                    mDataSet = Transaction.getAllDaysWithTransaction(mDBManager.getReadableDatabase(), true);
+                    mDataSet = Transaction.getAllDaysWithTransaction(databaseManager.getReadableDatabase(), true);
                     break;
                 case FREQUENCY_WEEKLY:
-                    mDataSet = Transaction.getAllWeeksWithTransaction(mDBManager.getReadableDatabase(), true);
+                    mDataSet = Transaction.getAllWeeksWithTransaction(databaseManager.getReadableDatabase(), true);
                     break;
                 case FREQUENCY_MONTHLY:
-                    mDataSet = Transaction.getAllMonthWithTransaction(mDBManager.getReadableDatabase(), true);
+                    mDataSet = Transaction.getAllMonthWithTransaction(databaseManager.getReadableDatabase(), true);
                     break;
 
             }
+
             mHandler.obtainMessage(H_KEY_UPDATE_DS).sendToTarget();
         }
     }
 
-    private void printLog(String log) {
-        SharedFunctions.printLog(log);
-    }
+//    private void printLog(String log) {
+//        SharedFunctions.printLog(log);
+//    }
 
 
 }

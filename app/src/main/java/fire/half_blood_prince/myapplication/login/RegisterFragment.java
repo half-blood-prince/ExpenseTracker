@@ -22,8 +22,8 @@ import fire.half_blood_prince.myapplication.utility.Validation;
  */
 public class RegisterFragment extends Fragment implements View.OnClickListener {
 
-    TextInputLayout tilName, tilEmail, tilPassword;
-    TextInputEditText tipName, tipEmail, tipPassword;
+    private TextInputLayout tilName, tilEmail, tilPassword;
+    private TextInputEditText tipName, tipEmail, tipPassword;
 
     private Activity mActivity;
 
